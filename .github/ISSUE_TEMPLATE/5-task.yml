@@ -1,0 +1,13 @@
+name: ⚙️ Task
+description: Create a new ticket for a task or chore.
+labels: [Task]
+projects: [eduardomirand/8]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Please enter an explicit description of the task
+      placeholder: Short and explicit description of the task...
+    validations:
+      required: true

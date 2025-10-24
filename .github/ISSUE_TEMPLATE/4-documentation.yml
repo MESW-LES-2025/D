@@ -1,0 +1,22 @@
+name: 📚 Documentation
+description: Create a new ticket for improve or extend the documentation.
+labels: [Documentation]
+projects: [eduardomirand/8]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Please enter an explicit description of your documentation improvement
+      placeholder: Short and explicit description of your documentation improvement...
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Please provide links to the documentation pages or sections that need improvement or extension.
+      placeholder: Links to documentation pages or sections...
+    validations:
+      required: false

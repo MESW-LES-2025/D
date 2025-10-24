@@ -1,0 +1,45 @@
+name: 🚀 Enhancement
+description: Create a new ticket for improve or extend an existing feature.
+labels: [Enhancement]
+projects: [eduardomirand/8]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Please enter an explicit description of your enhancement
+      placeholder: Short and explicit description of your enhancement...
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why is this enhancement important to you ?
+      placeholder: Explain why this enhancement is important to you...
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      value: |
+        ```gherkin
+        Given [context or precondition]
+        When [an action is performed]
+        Then [an expected outcome]
+        And [another expected outcome]
+        ```
+      render: bash
+    validations:
+      required: true
+
+  - type: textarea
+    id: ui_mocks
+    attributes:
+      label: UI Mocks / References
+      placeholder: 'Upload images or provide links to designs, wireframes, or examples.'
+    validations:
+      required: false

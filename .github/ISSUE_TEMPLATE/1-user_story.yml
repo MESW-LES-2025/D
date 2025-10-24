@@ -1,0 +1,47 @@
+name: 📝 User Story
+description: Create a new user story to describe a feature or functionality.
+labels: [User Story]
+projects: [eduardomirand/8]
+body:
+  - type: textarea
+    id: story
+    attributes:
+      label: User Story
+      value: |
+        As a [role],
+        I want to [an action or feature],
+        So that [a reason or benefit].
+      render: bash
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      value: |
+        ```gherkin
+        Given [context or precondition]
+        When [an action is performed]
+        Then [an expected outcome]
+        And [another expected outcome]
+        ```
+      render: bash
+    validations:
+      required: true
+
+  - type: textarea
+    id: ui_mocks
+    attributes:
+      label: UI Mocks / References
+      placeholder: 'Upload images or provide links to designs, wireframes, or examples.'
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes
+      placeholder: Any other relevant information or context.
+    validations:
+      required: false

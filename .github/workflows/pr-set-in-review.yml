@@ -1,0 +1,17 @@
+name: Update status to "In Review"
+on:
+  pull_request:
+    types: [review_requested]
+
+jobs:
+  update-status:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Update status to "In Review"
+        uses: nipe0324/update-project-v2-item-field@v2.0.2
+        with:
+          project-url: https://github.com/users/eduardomirand/projects/8
+          github-token: ${{ secrets.PROJECT_AUTOMATION_TOKEN }}
+          field-name: Status
+          field-value: In Review
