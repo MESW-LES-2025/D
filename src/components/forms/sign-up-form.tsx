@@ -1,5 +1,6 @@
 'use client';
 
+import type * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { IconLoader2, IconX } from '@tabler/icons-react';
 import Image from 'next/image';
@@ -9,7 +10,6 @@ import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -21,22 +21,12 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { signUp } from '@/lib/auth/auth-client';
-import { getCallbackURL } from '@/lib/shared';
+import { getCallbackURL } from '@/lib/routes';
 import { cn } from '@/lib/utils';
+import { convertImageToBase64 } from '@/utils/file';
+import { SignUpValidation } from '@/validations/SignUpValidation';
 
-const formSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  passwordConfirmation: z.string(),
-  image: z.instanceof(File).optional(),
-}).refine(data => data.password === data.passwordConfirmation, {
-  message: 'Passwords don\'t match',
-  path: ['passwordConfirmation'],
-});
-
-type FormData = z.infer<typeof formSchema>;
+type FormData = z.infer<typeof SignUpValidation>;
 
 export function SignUpForm({ className, ...props }: React.ComponentProps<'div'>) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -45,7 +35,7 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<'div'>)
   const params = useSearchParams();
 
   const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(SignUpValidation),
     defaultValues: {
       firstName: '',
       lastName: '',
@@ -263,13 +253,4 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<'div'>)
       </div>
     </div>
   );
-}
-
-async function convertImageToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 }

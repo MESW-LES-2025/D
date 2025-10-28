@@ -5,33 +5,21 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
   test: {
-    coverage: {
-      include: ['src/**/*'],
-      exclude: ['src/**/*.stories.{js,jsx,ts,tsx}'],
-    },
     projects: [
       {
         extends: true,
         test: {
           name: 'unit',
           include: ['tests/unit/**/*.test.{js,ts}'],
-          exclude: ['src/hooks/**/*.test.ts'],
           environment: 'node',
         },
       },
       {
         extends: true,
         test: {
-          name: 'ui',
-          include: ['**/*.test.tsx', 'src/hooks/**/*.test.ts'],
-          browser: {
-            enabled: true,
-            headless: true,
-            provider: 'playwright',
-            instances: [
-              { browser: 'chromium' },
-            ],
-          },
+          name: 'integration',
+          include: ['tests/integration/**/*.test.{js,ts}'],
+          environment: 'jsdom',
         },
       },
     ],

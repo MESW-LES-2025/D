@@ -1,5 +1,6 @@
 'use client';
 
+import type * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { IconLoader2 } from '@tabler/icons-react';
 import Link from 'next/link';
@@ -7,9 +8,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-
-import * as z from 'zod';
 import { Button } from '@/components/ui/button';
+
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
@@ -21,16 +21,11 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { signIn } from '@/lib/auth/auth-client';
-import { getCallbackURL } from '@/lib/shared';
+import { getCallbackURL } from '@/lib/routes';
 import { cn } from '@/lib/utils';
+import { SignInValidation } from '@/validations/SignInValidation';
 
-const formSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  rememberMe: z.boolean(),
-});
-
-type FormData = z.infer<typeof formSchema>;
+type FormData = z.infer<typeof SignInValidation>;
 
 export function SignInForm({ className, ...props }: React.ComponentProps<'div'>) {
   const [loading, startTransition] = useTransition();
@@ -38,7 +33,7 @@ export function SignInForm({ className, ...props }: React.ComponentProps<'div'>)
   const params = useSearchParams();
 
   const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(SignInValidation),
     defaultValues: {
       email: '',
       password: '',

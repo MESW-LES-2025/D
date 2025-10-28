@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CounterValidation } from '../../src/validations/CounterValidation';
+import { CounterValidation } from '@/validations/CounterValidation';
 
 describe('CounterValidation', () => {
   describe('when increment is valid', () => {

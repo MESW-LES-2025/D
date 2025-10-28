@@ -8,8 +8,8 @@ import { SignOutButton } from '@/components/SignOutButton';
 import { auth } from '@/lib/auth/auth';
 
 export const metadata: Metadata = {
-  title: 'Counter App',
-  description: 'A simple counter application with database storage',
+  title: 'TaskUp | Dashboard',
+  description: 'Your personal dashboard to manage tasks efficiently.',
 };
 
 export default async function Home() {
@@ -18,7 +18,7 @@ export default async function Home() {
     headers: await headers(),
   });
   if (!session) {
-    redirect('/sign-in');
+    redirect('/sign-in?callbackUrl=/dashboard');
   }
 
   const user: User = session.user;

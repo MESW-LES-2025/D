@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import * as z from 'zod';
 import { db } from '@/lib/db';
-import { counterSchema } from '@/models/Schema';
+import { counterTable } from '@/schema';
 import { CounterValidation } from '@/validations/CounterValidation';
 
 export const PUT = async (request: Request) => {
@@ -19,15 +19,15 @@ export const PUT = async (request: Request) => {
   const id = Number((await headers()).get('x-e2e-random-id')) || 0;
 
   const count = await db
-    .insert(counterSchema)
+    .insert(counterTable)
     .values({
       id,
       count: parse.data.increment,
     })
     .onConflictDoUpdate({
-      target: counterSchema.id,
+      target: counterTable.id,
       set: {
-        count: sql`${counterSchema.count} + ${parse.data.increment}`,
+        count: sql`${counterTable.count} + ${parse.data.increment}`,
       },
     })
     .returning();
