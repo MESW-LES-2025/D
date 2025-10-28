@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getBaseUrl, isServer } from '../../src/utils/helpers';
+import { getBaseUrl, isServer } from '@/utils/helpers';
 
 describe('Helpers', () => {
   describe('getBaseUrl', () => {
