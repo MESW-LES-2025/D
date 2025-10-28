@@ -1,16 +1,19 @@
-import { IconPlus } from '@tabler/icons-react';
 import { DynamicHeader } from '@/components/layout/dynamic-header';
-import { Button } from '@/components/ui/button';
+import { userTable } from '@/schema/user';
+import { db } from '@/lib/db';
+import { CreateTaskButton } from '@/components/tasks/CreateTaskButton';
 
-export default function DashboardHeader() {
+export default async function DashboardHeader() {
+  const users = await db.select({
+    id: userTable.id,
+    name: userTable.name,
+    email: userTable.email,
+  }).from(userTable);
   return (
     <DynamicHeader
       breadcrumbs={[{ label: 'Dashboard' }]}
       actions={(
-        <Button size="sm">
-          <IconPlus className="h-4 w-4" />
-          Add Task
-        </Button>
+          <CreateTaskButton users={users} />
       )}
     />
   );

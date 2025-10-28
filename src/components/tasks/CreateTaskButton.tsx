@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { CreateTaskModal } from '@/components/tasks/CreateTaskModal';
 import { Button } from '@/components/ui/button';
+import { IconPlus } from '@tabler/icons-react';
 
 type User = {
   id: string;
@@ -19,7 +20,11 @@ export function CreateTaskButton({ users }: Props) {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>New Task</Button>
+      <Button size="sm" onClick={() => setOpen(true)}>
+        <IconPlus className="h-4 w-4" />
+        Add Task
+
+      </Button>
       <CreateTaskModal
         open={open}
         onOpenChange={setOpen}
