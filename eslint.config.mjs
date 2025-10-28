@@ -59,6 +59,12 @@ export default antfu(
       'node/prefer-global/process': 'off', // Allow using `process.env`
       'test/padding-around-all': 'error', // Add padding in test files
       'test/prefer-lowercase-title': 'off', // Allow using uppercase titles in test titles
+      'ts/ban-ts-comment': ['error', {
+        'ts-nocheck': 'allow-with-description', // Allow @ts-nocheck with description
+      }],
+      'jsx-a11y/click-events-have-key-events': 'off', // Allow click events without keyboard events
+      'jsx-a11y/no-static-element-interactions': 'off', // Allow static elements with interactions
+      'react-hooks-extra/no-direct-set-state-in-use-effect': 'off', // Allow direct setState in useEffect
     },
   },
 );
