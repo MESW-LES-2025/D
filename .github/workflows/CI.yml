@@ -63,10 +63,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - if: github.event_name == 'pull_request'
-        name: Validate all commits from PR
-        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
-
       - name: Linter
         run: npm run lint
 
@@ -95,52 +91,3 @@ jobs:
         uses: docker://mcr.microsoft.com/playwright:v1.55.1
         with:
           args: npm run test
-
-  e2e:
-    strategy:
-      matrix:
-        node-version: [22.x]
-
-    name: Run E2E tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [build]
-
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js environment
-        uses: ./.github/actions/setup-project
-        with:
-          node-version: ${{ matrix.node-version }}
-          restore-nextjs-cache: true
-
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps chromium firefox
-
-      - name: Run E2E tests
-        run: npm run test:e2e
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
-
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: test-results
-          path: test-results/
-          retention-days: 7

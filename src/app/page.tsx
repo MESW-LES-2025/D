@@ -3,8 +3,8 @@ import { CounterForm } from '@/components/CounterForm';
 import { CurrentCount } from '@/components/CurrentCount';
 
 export const metadata: Metadata = {
-  title: 'Counter App',
-  description: 'A simple counter application with database storage',
+  title: 'TaskUp',
+  description: 'A simple task management app to boost your productivity.',
 };
 
 export default function Home() {
