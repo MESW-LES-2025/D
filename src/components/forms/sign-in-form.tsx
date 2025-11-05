@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input';
 import { signIn } from '@/lib/auth/auth-client';
 import { getCallbackURL } from '@/lib/routes';
 import { cn } from '@/lib/utils';
-import { SignInValidation } from '@/validations/SignInValidation';
+import { SignInValidation } from '@/validations/AuthValidation';
 
 type FormData = z.infer<typeof SignInValidation>;
 

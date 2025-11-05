@@ -7,7 +7,7 @@ test.describe('Sign In', () => {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
     const email = faker.internet.email().toLowerCase();
-    const password = faker.internet.password({ length: 12 });
+    const password = 'Password123';
 
     await page.goto('/sign-up');
     await page.getByLabel('First name').fill(firstName);

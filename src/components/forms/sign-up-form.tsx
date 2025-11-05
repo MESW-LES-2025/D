@@ -24,7 +24,7 @@ import { signUp } from '@/lib/auth/auth-client';
 import { getCallbackURL } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import { convertImageToBase64 } from '@/utils/file';
-import { SignUpValidation } from '@/validations/SignUpValidation';
+import { SignUpValidation } from '@/validations/AuthValidation';
 
 type FormData = z.infer<typeof SignUpValidation>;
 
