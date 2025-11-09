@@ -11,16 +11,9 @@
 // Legacy tables (to be removed)
 export * from './counter';
 
-// Enums
-export * from './enums';
+// Tables
 export * from './group';
 export * from './groupMember';
-// Relations
-export * from './relations';
 export * from './reward';
-
 export * from './task';
-
-// Tables
-export * from './user';
 export * from './user';
