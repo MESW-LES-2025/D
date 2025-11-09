@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { index, integer, pgEnum, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { index, integer, pgEnum, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { groupTable } from './group';
@@ -14,7 +14,7 @@ export const priorityEnum = pgEnum('priorities', ['low', 'normal', 'high', 'crit
 export const taskTable = pgTable('tasks', {
   id: uuid('id').primaryKey().defaultRandom(),
   groupId: uuid('group_id').notNull().references(() => groupTable.id),
-  userId: uuid('user_id').references(() => userTable.id),
+  userId: text('user_id').references(() => userTable.id),
   name: varchar('name', { length: 256 }).notNull(),
   description: varchar('description', { length: 2048 }).notNull(),
   priority: priorityEnum('priority').notNull(),

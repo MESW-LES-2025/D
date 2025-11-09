@@ -12,7 +12,7 @@ CREATE TABLE "groups" (
 CREATE TABLE "groups_members" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"group_id" uuid NOT NULL,
-	"user_id" uuid NOT NULL,
+	"user_id" text NOT NULL,
 	"role_id" "roles",
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE "rewards" (
 CREATE TABLE "tasks" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"group_id" uuid NOT NULL,
-	"user_id" uuid,
+	"user_id" text,
 	"name" varchar(256) NOT NULL,
 	"description" varchar(2048) NOT NULL,
 	"priority" "priorities" NOT NULL,

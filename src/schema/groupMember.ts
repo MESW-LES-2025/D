@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { index, pgEnum, pgTable, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { index, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { groupTable } from './group';
 import { taskTable } from './task';
@@ -12,7 +12,7 @@ export const roleEnum = pgEnum('roles', ['administrator', 'member']);
 export const groupMemberTable = pgTable('groups_members', {
   id: uuid('id').primaryKey().defaultRandom(),
   groupId: uuid('group_id').notNull().references(() => groupTable.id),
-  userId: uuid('user_id').notNull().references(() => userTable.id),
+  userId: text('user_id').notNull().references(() => userTable.id),
   roleId: roleEnum('role_id'),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
