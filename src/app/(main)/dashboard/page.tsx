@@ -13,7 +13,6 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  // Ensure the user is authenticated
   const session = await auth.api.getSession({
     headers: await headers(),
   });
