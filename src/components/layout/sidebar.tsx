@@ -60,9 +60,7 @@ export function Sidebar() {
   return (
     <aside className="flex h-screen w-64 flex-col border-r bg-background">
       <div className="flex h-16 border-b px-6">
-        <Link href="/" className="flex items-center space-x-2">
-          <Logo url="/" />
-        </Link>
+        <Logo url="/" />
       </div>
 
       {/* Navigation */}
