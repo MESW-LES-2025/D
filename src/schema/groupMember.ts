@@ -5,8 +5,10 @@ import { groupTable } from './group';
 import { taskTable } from './task';
 import { userTable } from './user';
 
+// Enuns
 export const roleEnum = pgEnum('roles', ['administrator', 'member']);
 
+// Table
 export const groupMemberTable = pgTable('groups_members', {
   id: uuid('id').primaryKey().defaultRandom(),
   groupId: uuid('group_id').notNull().references(() => groupTable.id),
@@ -20,7 +22,7 @@ export const groupMemberTable = pgTable('groups_members', {
   userIdIdx: index('groups_members_user_id_index').on(table.userId),
 }));
 
-// Group Members relations
+// Relations
 export const groupsMembersRelations = relations(groupMemberTable, ({ one }) => ({
   group: one(groupTable, {
     fields: [groupMemberTable.groupId],
@@ -32,7 +34,7 @@ export const groupsMembersRelations = relations(groupMemberTable, ({ one }) => (
   }),
 }));
 
-// Zod schemas for validation
+// Validation
 export const insertGroupMemberSchema = createInsertSchema(groupMemberTable);
 export const selectGroupMemberSchema = createSelectSchema(groupMemberTable);
 
