@@ -1,74 +1,93 @@
-import type { User } from 'better-auth';
-import type { Metadata } from 'next';
-import { headers } from 'next/headers';
-import Image from 'next/image';
-import { redirect } from 'next/navigation';
+import { CheckSquare, TrendingUp, Trophy, Users } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-import { SignOutButton } from '@/components/SignOutButton';
-import { auth } from '@/lib/auth/auth';
-
-export const metadata: Metadata = {
-  title: 'TaskUp | Dashboard',
-  description: 'Your personal dashboard to manage tasks efficiently.',
-};
-
-export default async function Home() {
-  // Ensure the user is authenticated
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) {
-    redirect('/sign-in?callbackUrl=/dashboard');
-  }
-
-  const user: User = session.user;
-
+export default function DashboardPage() {
   return (
-    <div className="min-h-screen  py-12">
-      <div className="mx-auto max-w-lg px-6">
-        <div className="rounded-lg bg-card p-8 shadow-md">
-          <h1 className="mb-8 text-center text-3xl font-bold">
-            Dashboard
-          </h1>
-
-          <div className="flex-1 space-y-3">
-            <div>
-              <p className="text-sm text-muted-foreground">Name</p>
-              <p className="text-base font-medium">
-                {user.name}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-sm text-muted-foreground">Email</p>
-              <p className="text-base font-medium">
-                {user.email}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-sm text-muted-foreground">User ID</p>
-              <p className="font-mono text-xs text-muted-foreground">
-                {user.id}
-              </p>
-            </div>
-
-            {user.image && (
-              <div className="shrink-0">
-                <Image
-                  src={user.image}
-                  alt={user.name}
-                  width={80}
-                  height={80}
-                  className="rounded-full border-2 border-border shadow-sm"
-                />
-              </div>
-            )}
-
-            <SignOutButton />
-          </div>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">Welcome back! Here's an overview of your productivity.</p>
       </div>
+
+      {/* Stats Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
+            <CheckSquare className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">24</div>
+            <p className="text-xs text-muted-foreground">+2 from last week</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Completed</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">18</div>
+            <p className="text-xs text-muted-foreground">75% completion rate</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Groups</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">3</div>
+            <p className="text-xs text-muted-foreground">12 total members</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Points Earned</CardTitle>
+            <Trophy className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">450</div>
+            <p className="text-xs text-muted-foreground">2 rewards available</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Activity */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Activity</CardTitle>
+          <CardDescription>Your latest tasks and achievements</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-4">
+              <div className="h-2 w-2 rounded-full bg-green-500" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Completed "Design homepage mockup"</p>
+                <p className="text-xs text-muted-foreground">2 hours ago</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="h-2 w-2 rounded-full bg-blue-500" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Started "Implement authentication"</p>
+                <p className="text-xs text-muted-foreground">5 hours ago</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="h-2 w-2 rounded-full bg-yellow-500" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Earned 50 points in "Development Team"</p>
+                <p className="text-xs text-muted-foreground">1 day ago</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
