@@ -38,7 +38,11 @@ function randomMessage(points: number) {
   return template.replace("{points}", String(points));
 }
 
-export default function TaskSimulator() {
+type TaskSimulatorProps = {
+  onPointsChange?: (points: number) => void;
+};
+
+export default function TaskSimulator({ onPointsChange }: TaskSimulatorProps = {}) {
   const [tasks, setTasks] = useState<Task[]>(() => INITIAL_TASKS);
   const [banner, setBanner] = useState<{ text: string; visible: boolean } | null>(null);
 
@@ -59,20 +63,28 @@ export default function TaskSimulator() {
       }
 
       // confirmed: mark completed, show banner and toast
-      setTasks((s) => s.map((t) => (t.id === task.id ? { ...t, completed: true } : t)));
+      const updatedTasks = tasks.map((t) => (t.id === task.id ? { ...t, completed: true } : t));
+      setTasks(updatedTasks);
       const msg = randomMessage(task.points);
       setBanner({ text: msg, visible: true });
       // also show a toast with small emoji
       toast.success(msg);
+      // notify parent of total points change
+      const totalCompleted = updatedTasks.filter((t) => t.completed).reduce((sum, t) => sum + t.points, 0);
+      onPointsChange?.(totalCompleted);
       return;
     }
 
     // unchecking or other cases: just update state
-    setTasks((s) => s.map((t) => (t.id === task.id ? { ...t, completed: checked } : t)));
+    const updatedTasks = tasks.map((t) => (t.id === task.id ? { ...t, completed: checked } : t));
+    setTasks(updatedTasks);
+    const totalCompleted = updatedTasks.filter((t) => t.completed).reduce((sum, t) => sum + t.points, 0);
+    onPointsChange?.(totalCompleted);
   }
 
   function resetAll() {
     setTasks(INITIAL_TASKS.map((t) => ({ ...t, completed: false })));
+    onPointsChange?.(0);
   }
 
   return (
@@ -134,12 +146,18 @@ export default function TaskSimulator() {
                 if (!task.completed) {
                   const ok = window.confirm(`Mark "${task.title}" as completed and award ${task.points} points?`);
                   if (!ok) return;
-                  setTasks((s) => s.map((t) => (t.id === task.id ? { ...t, completed: true } : t)));
+                  const updatedTasks = tasks.map((t) => (t.id === task.id ? { ...t, completed: true } : t));
+                  setTasks(updatedTasks);
                   const msg = randomMessage(task.points);
                   setBanner({ text: msg, visible: true });
                   toast.success(msg);
+                  const totalCompleted = updatedTasks.filter((t) => t.completed).reduce((sum, t) => sum + t.points, 0);
+                  onPointsChange?.(totalCompleted);
                 } else {
-                  setTasks((s) => s.map((t) => (t.id === task.id ? { ...t, completed: false } : t)));
+                  const updatedTasks = tasks.map((t) => (t.id === task.id ? { ...t, completed: false } : t));
+                  setTasks(updatedTasks);
+                  const totalCompleted = updatedTasks.filter((t) => t.completed).reduce((sum, t) => sum + t.points, 0);
+                  onPointsChange?.(totalCompleted);
                 }
               }}>
                 {task.completed ? 'Undo' : 'Quick Done'}
