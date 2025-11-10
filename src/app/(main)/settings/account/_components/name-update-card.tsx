@@ -146,7 +146,7 @@ export function NameUpdateCard({ className, ...props }: NameUpdateCardProps) {
 
             <Separator className="w-full" />
 
-            <div className="px-6">
+            <div className="flex justify-end px-6">
               <Button type="submit" disabled={loading}>
                 {loading
                   ? (
