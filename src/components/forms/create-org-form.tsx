@@ -4,6 +4,7 @@ import type * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { IconLoader2, IconUpload } from '@tabler/icons-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -36,6 +37,7 @@ export function CreateOrgForm({ className, onSuccess, ...props }: CreateOrgFormP
   const [dragActive, setDragActive] = useState(false);
   const [loading, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   const form = useForm<FormData>({
     resolver: zodResolver(CreateOrganizationValidation),
@@ -120,6 +122,9 @@ export function CreateOrgForm({ className, onSuccess, ...props }: CreateOrgFormP
         toast.success('Organization created successfully');
         form.reset();
         onSuccess?.();
+
+        // Refresh the page to reflect the new active organization
+        router.refresh();
       } catch (error) {
         toast.error(error instanceof Error ? error.message : 'Failed to create organization');
       }

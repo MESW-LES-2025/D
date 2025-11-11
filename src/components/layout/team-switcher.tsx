@@ -1,8 +1,8 @@
 'use client';
 import { IconBuilding, IconPlus, IconSelector, IconWorldX } from '@tabler/icons-react';
-
 import Image from 'next/image';
 import * as React from 'react';
+
 import { CreateOrgDialog } from '@/components/dialogs/create-org-dialog';
 import {
   DropdownMenu,
@@ -82,7 +82,7 @@ export function TeamSwitcher() {
                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                   <IconPlus className="size-4" />
                 </div>
-                <div className="font-medium text-muted-foreground">Add organization</div>
+                <div className="font-medium text-muted-foreground">Create organization</div>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

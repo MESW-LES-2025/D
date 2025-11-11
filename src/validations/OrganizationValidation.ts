@@ -38,3 +38,11 @@ export const CreateOrganizationValidation = z.object({
     }),
   logo: orgLogoSchema.optional(),
 });
+
+export const InviteOrganizationMemberValidation = z.object({
+  email: z
+    .string()
+    .min(1, { message: 'Email is required' })
+    .email({ message: 'Please enter a valid email address' }),
+  role: z.enum(['admin', 'member', 'owner']),
+});

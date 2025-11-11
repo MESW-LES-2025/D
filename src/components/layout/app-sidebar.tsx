@@ -1,11 +1,8 @@
 'use client';
 
 import {
-  IconChartDots3Filled,
-  IconChartRadar,
   IconDashboard,
   IconSettings,
-  IconSpaces,
 } from '@tabler/icons-react';
 import * as React from 'react';
 import { NavMain } from '@/components/layout/nav-main';
@@ -20,23 +17,6 @@ import {
 } from '@/components/ui/sidebar';
 
 const data = {
-  teams: [
-    {
-      name: 'Acme Inc',
-      logo: IconSpaces,
-      plan: 'Enterprise',
-    },
-    {
-      name: 'Acme Corp.',
-      logo: IconChartDots3Filled,
-      plan: 'Startup',
-    },
-    {
-      name: 'Evil Corp.',
-      logo: IconChartRadar,
-      plan: 'Free',
-    },
-  ],
   navMain: [
     {
       title: 'Dashboard',
@@ -57,7 +37,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent className="mt-2">
         <NavMain items={data.navMain} />

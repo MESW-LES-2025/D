@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 
-import { CreateOrgForm } from '@/components/forms/create-org-form';
+import { InviteOrgForm } from '@/components/forms/invite-org-form';
 import {
   Dialog,
   DialogContent,
@@ -13,19 +13,19 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 
-type CreateOrgDialogProps = {
+type InviteOrgDialogProps = {
   children?: ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   showTrigger?: boolean;
 };
 
-export function CreateOrgDialog({
+export function InviteOrgDialog({
   children,
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
   showTrigger = true,
-}: CreateOrgDialogProps) {
+}: InviteOrgDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
 
   // Use controlled state if provided, otherwise use internal state
@@ -39,12 +39,12 @@ export function CreateOrgDialog({
       )}
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create Organization</DialogTitle>
+          <DialogTitle>Invite Team Member</DialogTitle>
           <DialogDescription>
-            Fill in the details below to create a new organization.
+            Create an invitation link to share with someone to join your organization.
           </DialogDescription>
         </DialogHeader>
-        <CreateOrgForm onSuccess={() => setOpen(false)} />
+        <InviteOrgForm onSuccess={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );

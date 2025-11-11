@@ -1,19 +1,10 @@
 import type { Metadata } from 'next';
-import { IconArrowUpRight, IconWorldX } from '@tabler/icons-react';
 import { headers } from 'next/headers';
-
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { CreateOrgDialog } from '@/components/dialogs/create-org-dialog';
+
+import { InviteOrgDialog } from '@/components/dialogs/invite-org-dialog';
+import { NoOrganization } from '@/components/empty/no-organization';
 import { Button } from '@/components/ui/button';
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@/components/ui/empty';
 import { auth } from '@/lib/auth/auth';
 
 export const metadata: Metadata = {
@@ -29,39 +20,18 @@ export default async function Home() {
     redirect('/sign-in?callbackUrl=/dashboard');
   }
 
+  if (!session.session?.activeOrganizationId) {
+    return <NoOrganization />;
+  }
+
   return (
     <div className="py-12">
-      <div className="max-w-lg">
-        <Empty>
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <IconWorldX />
-            </EmptyMedia>
-            <EmptyTitle>No Organizations Yet</EmptyTitle>
-            <EmptyDescription>
-              You haven&apos;t created or joined any organizations yet. Get started by creating
-              your first organization or joining an existing one.
-            </EmptyDescription>
-          </EmptyHeader>
-          <EmptyContent>
-            <div className="flex gap-2">
-              <CreateOrgDialog />
-              <Button variant="outline">Use Invite</Button>
-            </div>
-          </EmptyContent>
-          <Button
-            variant="link"
-            asChild
-            className="text-muted-foreground"
-            size="sm"
-          >
-            <Link href="#">
-              Learn More
-              {' '}
-              <IconArrowUpRight />
-            </Link>
-          </Button>
-        </Empty>
+      <div className="flex max-w-lg flex-col">
+        Welcome to the dashboard
+
+        <InviteOrgDialog>
+          <Button variant="outline">Invite Member</Button>
+        </InviteOrgDialog>
       </div>
     </div>
   );
