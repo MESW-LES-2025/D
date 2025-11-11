@@ -1,7 +1,5 @@
-// @ts-nocheck - zod v4 and @hookform/resolvers type compatibility issues
 'use client';
-
-import type * as z from 'zod';
+import type { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { useState, useTransition } from 'react';
@@ -49,14 +47,16 @@ import { TaskValidation } from '@/validations/TaskValidation';
 
 type FormData = z.infer<typeof TaskValidation>;
 
+type User = {
+  id: string;
+  name: string;
+  email: string;
+};
+
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  users: Array<{
-    id: string;
-    name: string;
-    email: string;
-  }>;
+  users: User[];
 };
 
 export function CreateTaskModal({ open, onOpenChange, users }: Props) {
@@ -67,6 +67,7 @@ export function CreateTaskModal({ open, onOpenChange, users }: Props) {
     resolver: zodResolver(TaskValidation),
     defaultValues: {
       name: '',
+      description: '',
       priority: 'normal',
       difficulty: 'medium',
       dueDate: undefined,
@@ -90,6 +91,7 @@ export function CreateTaskModal({ open, onOpenChange, users }: Props) {
         hard: '30',
       } as const;
       const score = scoreMap[values.difficulty];
+
       toast.success('Task created successfully!', {
         description: `${values.name} has been created with ${values.difficulty} difficulty (${score} points)`,
       });
@@ -112,7 +114,12 @@ export function CreateTaskModal({ open, onOpenChange, users }: Props) {
         </DialogHeader>
 
         <Form {...form}>
-          <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+          <form
+            className="space-y-4"
+            onSubmit={form.handleSubmit(onSubmit)}
+            noValidate
+          >
+            {/* --- Name --- */}
             <FormField
               control={form.control}
               name="name"
@@ -127,13 +134,17 @@ export function CreateTaskModal({ open, onOpenChange, users }: Props) {
               )}
             />
 
+            {/* --- Priority --- */}
             <FormField
               control={form.control}
               name="priority"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Priority</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select priority" />
@@ -151,13 +162,17 @@ export function CreateTaskModal({ open, onOpenChange, users }: Props) {
               )}
             />
 
+            {/* --- Difficulty --- */}
             <FormField
               control={form.control}
               name="difficulty"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Difficulty</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select difficulty" />
@@ -174,6 +189,7 @@ export function CreateTaskModal({ open, onOpenChange, users }: Props) {
               )}
             />
 
+            {/* --- Due Date --- */}
             <FormField
               control={form.control}
               name="dueDate"
@@ -184,8 +200,20 @@ export function CreateTaskModal({ open, onOpenChange, users }: Props) {
                     <Input
                       type="date"
                       min={new Date().toISOString().substring(0, 10)}
-                      value={field.value ? new Date(field.value).toISOString().substring(0, 10) : ''}
-                      onChange={e => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
+                      value={
+                        field.value
+                          ? new Date(field.value)
+                              .toISOString()
+                              .substring(0, 10)
+                          : ''
+                      }
+                      onChange={(e) => {
+                        field.onChange(
+                          e.target.value
+                            ? new Date(e.target.value)
+                            : undefined,
+                        );
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -193,6 +221,7 @@ export function CreateTaskModal({ open, onOpenChange, users }: Props) {
               )}
             />
 
+            {/* --- Assignee --- */}
             <FormField
               control={form.control}
               name="assigneeId"
@@ -232,7 +261,9 @@ export function CreateTaskModal({ open, onOpenChange, users }: Props) {
                             <Check
                               className={cn(
                                 'mr-2 h-4 w-4',
-                                !field.value ? 'opacity-100' : 'opacity-0',
+                                !field.value
+                                  ? 'opacity-100'
+                                  : 'opacity-0',
                               )}
                             />
                             None
@@ -249,7 +280,9 @@ export function CreateTaskModal({ open, onOpenChange, users }: Props) {
                               <Check
                                 className={cn(
                                   'mr-2 h-4 w-4',
-                                  field.value === user.id ? 'opacity-100' : 'opacity-0',
+                                  field.value === user.id
+                                    ? 'opacity-100'
+                                    : 'opacity-0',
                                 )}
                               />
                               {`${user.name} (${user.email})`}

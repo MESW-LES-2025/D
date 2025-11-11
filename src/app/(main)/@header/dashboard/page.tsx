@@ -1,7 +1,7 @@
 import { DynamicHeader } from '@/components/layout/dynamic-header';
-import { userTable } from '@/schema/user';
-import { db } from '@/lib/db';
 import { CreateTaskButton } from '@/components/tasks/CreateTaskButton';
+import { db } from '@/lib/db';
+import { userTable } from '@/schema/user';
 
 export const dynamic = 'force-dynamic';
 
