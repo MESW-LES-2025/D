@@ -43,7 +43,7 @@ export function NavMain({
                   }
                   asChild
                 >
-                  <Link href={item.url}>
+                  <Link href={href}>
                     <item.icon />
                     <span>{item.title}</span>
                   </Link>
