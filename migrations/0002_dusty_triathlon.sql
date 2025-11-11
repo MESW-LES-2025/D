@@ -25,11 +25,21 @@ CREATE TABLE IF NOT EXISTS "tasks" (
 );
 DO $$
 BEGIN
-  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'user') THEN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.tables
+    WHERE table_name = 'user'
+  )
+  AND NOT EXISTS (
+    SELECT 1
+    FROM information_schema.table_constraints
+    WHERE constraint_name = 'tasks_user_id_user_id_fk'
+      AND table_name = 'tasks'
+  ) THEN
     ALTER TABLE "tasks"
-    ADD CONSTRAINT "tasks_user_id_user_id_fk"
-    FOREIGN KEY ("user_id") REFERENCES "user"("id")
-    ON DELETE SET NULL ON UPDATE NO ACTION;
+      ADD CONSTRAINT "tasks_user_id_user_id_fk"
+      FOREIGN KEY ("user_id") REFERENCES "user"("id")
+      ON DELETE SET NULL ON UPDATE NO ACTION;
   ELSE
     RAISE NOTICE 'Skipping FK: "user" table does not exist yet';
   END IF;
