@@ -9,4 +9,5 @@
  */
 
 export * from './counter';
+export * from './organization';
 export * from './user';

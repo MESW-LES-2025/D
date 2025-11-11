@@ -15,6 +15,13 @@
       "when": 1761576777674,
       "tag": "0001_thick_umar",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1762872783766,
+      "tag": "0002_tense_stryfe",
+      "breakpoints": true
     }
   ]
 }

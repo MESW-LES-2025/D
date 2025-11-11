@@ -20,3 +20,12 @@ export function getInitials(input: string | null | undefined): string {
     .slice(0, 2)
     .toUpperCase();
 }
+
+export const createSlug = (value: string) => {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+};
