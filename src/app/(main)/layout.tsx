@@ -1,4 +1,4 @@
-import { Sidebar } from '@/components/layout/sidebar';
+import { Sidebar } from '@/components/common/sidebar';
 
 export default function RootLayout({
   children,
