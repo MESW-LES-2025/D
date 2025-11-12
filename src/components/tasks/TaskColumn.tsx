@@ -1,6 +1,6 @@
 'use client';
 
-import type { Task } from '@/types/task';
+import type { TaskDashboard } from '@/types/task';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +11,7 @@ import { TaskCard } from './TaskCard';
 type TaskColumnProps = {
   id: string;
   title: string;
-  tasks: Task[];
+  tasks: TaskDashboard[];
 };
 
 export function TaskColumn({ id, title, tasks }: TaskColumnProps) {

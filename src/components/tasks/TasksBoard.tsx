@@ -1,7 +1,7 @@
 'use client';
 
-import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core';
-import type { Task, TaskStatus } from '@/types/task';
+import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
+import type { TaskDashboard, TaskStatus } from '@/types/task';
 import {
   closestCenter,
   DndContext,
@@ -15,19 +15,18 @@ import {
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 import * as React from 'react';
-import { toast } from 'sonner';
 import { TaskCard } from './TaskCard';
 import { TaskColumn } from './TaskColumn';
 
 type TasksBoardProps = {
-  initialTasks: Task[];
+  initialTasks: TaskDashboard[];
   onTaskMove?: (taskId: string, newStatus: TaskStatus) => Promise<void>;
 };
 
 const COLUMN_CONFIG = {
   todo: {
     title: 'To Do',
-    id: 'todo' as TaskStatus,
+    id: 'to_do' as TaskStatus,
   },
   in_progress: {
     title: 'In Progress',
@@ -35,13 +34,13 @@ const COLUMN_CONFIG = {
   },
   done: {
     title: 'Done',
-    id: 'done' as TaskStatus,
+    id: 'completed' as TaskStatus,
   },
 } as const;
 
 export function TasksBoard({ initialTasks, onTaskMove }: TasksBoardProps) {
-  const [tasks, setTasks] = React.useState<Task[]>(initialTasks);
-  const [activeTask, setActiveTask] = React.useState<Task | null>(null);
+  const [tasks, setTasks] = React.useState<TaskDashboard[]>(initialTasks);
+  const [activeTask, setActiveTask] = React.useState<TaskDashboard | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -56,7 +55,7 @@ export function TasksBoard({ initialTasks, onTaskMove }: TasksBoardProps) {
 
   // Derive columns from tasks
   const todoTasks = React.useMemo(
-    () => tasks.filter(task => task.status === 'todo'),
+    () => tasks.filter(task => task.status === 'to_do'),
     [tasks],
   );
   const inProgressTasks = React.useMemo(
@@ -64,7 +63,7 @@ export function TasksBoard({ initialTasks, onTaskMove }: TasksBoardProps) {
     [tasks],
   );
   const doneTasks = React.useMemo(
-    () => tasks.filter(task => task.status === 'done'),
+    () => tasks.filter(task => task.status === 'completed'),
     [tasks],
   );
 
@@ -73,29 +72,6 @@ export function TasksBoard({ initialTasks, onTaskMove }: TasksBoardProps) {
     const task = tasks.find(t => t.id === active.id);
     if (task) {
       setActiveTask(task);
-    }
-  };
-
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
-    // eslint-disable-next-line curly
-    if (!over) return;
-
-    const activeId = active.id as string;
-    const overId = over.id as string;
-
-    // Check if we're dragging over a column
-    if (overId === 'todo' || overId === 'in_progress' || overId === 'done') {
-      const newStatus = overId as TaskStatus;
-      const taskToUpdate = tasks.find(task => task.id === activeId);
-      if (taskToUpdate && taskToUpdate.status !== newStatus) {
-        // Optimistically update the task status
-        setTasks(prevTasks =>
-          prevTasks.map(task =>
-            task.id === activeId ? { ...task, status: newStatus } : task,
-          ),
-        );
-      }
     }
   };
 
@@ -113,7 +89,7 @@ export function TasksBoard({ initialTasks, onTaskMove }: TasksBoardProps) {
     let newStatus: TaskStatus | null = null;
 
     // Check if we're dropping on a column
-    if (overId === 'todo' || overId === 'in_progress' || overId === 'done') {
+    if (overId === 'to_do' || overId === 'in_progress' || overId === 'completed') {
       newStatus = overId as TaskStatus;
     } else {
       // If dropping on a task, find its column
@@ -134,12 +110,10 @@ export function TasksBoard({ initialTasks, onTaskMove }: TasksBoardProps) {
           ),
         );
 
-        // Call the API if provided
         if (onTaskMove) {
           try {
             await onTaskMove(activeId, newStatus);
-            toast.success('Task updated successfully');
-          } catch (error) {
+          } catch {
             // Revert on error
             setTasks(prevTasks =>
               prevTasks.map(task =>
@@ -148,8 +122,6 @@ export function TasksBoard({ initialTasks, onTaskMove }: TasksBoardProps) {
                   : task,
               ),
             );
-            toast.error('Failed to update task');
-            console.error('Failed to update task:', error);
           }
         }
       }
@@ -161,12 +133,11 @@ export function TasksBoard({ initialTasks, onTaskMove }: TasksBoardProps) {
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
       <div className="flex h-full gap-6 p-6">
         <TaskColumn
-          id="todo"
+          id="to_do"
           title={COLUMN_CONFIG.todo.title}
           tasks={todoTasks}
         />
@@ -176,7 +147,7 @@ export function TasksBoard({ initialTasks, onTaskMove }: TasksBoardProps) {
           tasks={inProgressTasks}
         />
         <TaskColumn
-          id="done"
+          id="completed"
           title={COLUMN_CONFIG.done.title}
           tasks={doneTasks}
         />

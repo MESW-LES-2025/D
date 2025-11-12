@@ -1,9 +1,9 @@
 'use client';
 
-import type { Task } from '@/types/task';
+import type { TaskDashboard } from '@/types/task';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Calendar, CalendarClock, GripVertical } from 'lucide-react';
+import { CalendarClock, GripVertical } from 'lucide-react';
 import * as React from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 type TaskCardProps = {
-  task: Task;
+  task: TaskDashboard;
   isDragOverlay?: boolean;
 };
 
@@ -35,19 +35,18 @@ export function TaskCard({ task, isDragOverlay = false }: TaskCardProps) {
 
   // Check if task is overdue
   const isOverdue = React.useMemo(() => {
-    if (!task.dueAt) {
+    if (!task.dueDate) {
       return false;
     }
-    const dueDate = new Date(task.dueAt);
+    const dueDate = new Date(task.dueDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return dueDate < today;
-  }, [task.dueAt]);
+  }, [task.dueDate]);
 
   // Format dates
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -55,13 +54,15 @@ export function TaskCard({ task, isDragOverlay = false }: TaskCardProps) {
   };
 
   // Get initials from name
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+  const getInitials = (name: string | null) => {
+    return name == null
+      ? null
+      : name
+          .split(' ')
+          .map(n => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2);
   };
 
   return (
@@ -80,7 +81,7 @@ export function TaskCard({ task, isDragOverlay = false }: TaskCardProps) {
         )}
         role="article"
         aria-roledescription="draggable"
-        aria-label={`Task: ${task.title}`}
+        aria-label={`Task: ${task.name}`}
       >
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
@@ -99,28 +100,19 @@ export function TaskCard({ task, isDragOverlay = false }: TaskCardProps) {
               <div className="flex items-center gap-2">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="text-xs">
-                    {getInitials(task.assigneeName)}
+                    {getInitials(task.userName)}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-sm font-medium">{task.assigneeName}</span>
+                <span className="text-sm font-medium">{task.userName}</span>
               </div>
 
               {/* Task title */}
-              <h3 className="leading-tight font-semibold">{task.title}</h3>
+              <h3 className="leading-tight font-semibold">{task.name}</h3>
 
               {/* Metadata and badges */}
               <div className="flex flex-wrap items-center gap-2 text-xs">
-                {/* Created date */}
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <Calendar className="h-3 w-3" />
-                  <span>
-                    Created:
-                    {formatDate(task.createdAt)}
-                  </span>
-                </div>
-
                 {/* Due date if exists */}
-                {task.dueAt && (
+                {task.dueDate && (
                   <div
                     className={cn(
                       'flex items-center gap-1',
@@ -130,16 +122,9 @@ export function TaskCard({ task, isDragOverlay = false }: TaskCardProps) {
                     <CalendarClock className="h-3 w-3" />
                     <span>
                       Due:
-                      {formatDate(task.dueAt)}
+                      {formatDate(task.dueDate)}
                     </span>
                   </div>
-                )}
-
-                {/* Critical badge */}
-                {task.isCritical && (
-                  <Badge variant="destructive" className="h-5 px-2 text-xs">
-                    Critical
-                  </Badge>
                 )}
 
                 {/* Overdue badge */}

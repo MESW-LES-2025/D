@@ -1,89 +1,84 @@
 'use client';
 
-import type { Task } from '@/types/task';
+import type { TaskDashboard } from '@/types/task';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { TasksBoard } from '@/components/tasks/TasksBoard';
-// Sample data for demonstration
-const sampleTasks: Task[] = [
-  {
-    id: '1',
-    title: 'Design login screen',
-    assigneeName: 'Ana Silva',
-    createdAt: '2025-10-20T10:00:00Z',
-    dueAt: '2025-11-05T23:59:59Z',
-    isCritical: true,
-    status: 'todo',
-  },
-  {
-    id: '2',
-    title: 'Implement auth flow',
-    assigneeName: 'Rui Santos',
-    createdAt: '2025-10-22T14:30:00Z',
-    dueAt: '2025-11-06T23:59:59Z',
-    isCritical: false,
-    status: 'in_progress',
-  },
-  {
-    id: '3',
-    title: 'Write unit tests',
-    assigneeName: 'Maria Costa',
-    createdAt: '2025-10-25T09:15:00Z',
-    isCritical: false,
-    status: 'todo',
-  },
-  {
-    id: '4',
-    title: 'Deploy preview env',
-    assigneeName: 'João Lima',
-    createdAt: '2025-10-28T16:45:00Z',
-    dueAt: '2025-11-02T23:59:59Z',
-    isCritical: false,
-    status: 'done',
-  },
-  {
-    id: '5',
-    title: 'Review PR comments',
-    assigneeName: 'Ana Silva',
-    createdAt: '2025-10-29T11:00:00Z',
-    dueAt: '2025-10-30T18:00:00Z', // This will be overdue
-    isCritical: true,
-    status: 'todo',
-  },
-  {
-    id: '6',
-    title: 'Update documentation',
-    assigneeName: 'Maria Costa',
-    createdAt: '2025-10-30T10:00:00Z',
-    isCritical: false,
-    status: 'in_progress',
-  },
-];
 
-// Mock API function (replace with actual API call)
-async function updateTaskStatus(taskId: string, newStatus: Task['status']) {
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 500));
-  // In production, this would be an actual API call:
-  // const response = await fetch(`/api/tasks/${taskId}`, {
-  //   method: 'PATCH',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify({ status: newStatus }),
-  // });
-  // if (!response.ok) throw new Error('Failed to update task');
-  // eslint-disable-next-line no-console
-  console.log(`Task ${taskId} updated to ${newStatus}`);
+async function handleTaskMove(taskId: string, newStatus: TaskDashboard['status']) {
+  try {
+    const response = await fetch(`/api/task/${taskId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to update task');
+    }
+    toast.success('Task updated successfully');
+  } catch (error) {
+    toast.error('Failed to update task');
+    console.error('Failed to move task:', error);
+    throw new Error('Failed to update task');
+  }
 }
 
 export default function TasksPage() {
+  const [tasks, setTasks] = useState<TaskDashboard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchTasks = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/tasks');
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch tasks');
+      }
+
+      const data = await response.json();
+
+      setTasks(data || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load tasks');
+      console.error('Error fetching tasks:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
   return (
     <div className="flex h-screen flex-col">
       <header className="border-b px-6 py-4">
         <h1 className="text-2xl font-bold text-black">Tasks</h1>
       </header>
       <main className="flex-1 overflow-hidden">
-        <TasksBoard
-          initialTasks={sampleTasks}
-          onTaskMove={updateTaskStatus}
-        />
+        {loading
+          ? (
+              <div className="flex h-full items-center justify-center">
+                <p>Loading tasks...</p>
+              </div>
+            )
+          : error
+            ? (
+                <div className="flex h-full items-center justify-center">
+                  <p className="text-red-500">
+                    Error:
+                    {error}
+                  </p>
+                </div>
+              )
+            : (
+                <TasksBoard
+                  initialTasks={tasks}
+                  onTaskMove={handleTaskMove}
+                />
+              )}
       </main>
     </div>
   );

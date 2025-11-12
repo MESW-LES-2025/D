@@ -1,11 +1,10 @@
-export type TaskStatus = 'todo' | 'in_progress' | 'done';
+export type TaskStatus = 'to_do' | 'in_progress' | 'completed';
 
-export type Task = {
+export type TaskDashboard = {
   id: string;
-  title: string;
-  assigneeName: string;
-  createdAt: string; // ISO date
-  dueAt?: string; // ISO date (optional)
-  isCritical: boolean; // critical status
   status: TaskStatus;
+  name: string;
+  dueDate: Date;
+  userId: string | null;
+  userName: string | null;
 };
