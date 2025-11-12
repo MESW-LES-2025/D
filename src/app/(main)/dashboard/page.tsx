@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+import { InviteOrgDialog } from '@/components/dialogs/invite-org-dialog';
+import { NoOrganization } from '@/components/empty/no-organization';
+import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/auth/auth';
 
 export const metadata: Metadata = {
@@ -17,18 +20,18 @@ export default async function Home() {
     redirect('/sign-in?callbackUrl=/dashboard');
   }
 
-  return (
-    <div className="  py-12">
-      <div className="mx-auto max-w-lg px-6">
-        <div className="rounded-lg bg-card p-8 shadow-md">
-          <h1 className="mb-8 text-center text-3xl font-bold">
-            Dashboard
-          </h1>
+  if (!session.session?.activeOrganizationId) {
+    return <NoOrganization />;
+  }
 
-          <div className="flex-1 space-y-3">
-            This is the dashboard page
-          </div>
-        </div>
+  return (
+    <div className="py-12">
+      <div className="flex max-w-lg flex-col">
+        Welcome to the dashboard
+
+        <InviteOrgDialog>
+          <Button variant="outline">Invite Member</Button>
+        </InviteOrgDialog>
       </div>
     </div>
   );
