@@ -1,10 +1,10 @@
-import type { User } from 'better-auth';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
-import Image from 'next/image';
 import { redirect } from 'next/navigation';
 
-import { SignOutButton } from '@/components/SignOutButton';
+import { InviteOrgDialog } from '@/components/dialogs/invite-org-dialog';
+import { NoOrganization } from '@/components/empty/no-organization';
+import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/auth/auth';
 
 export const metadata: Metadata = {
@@ -13,7 +13,6 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  // Ensure the user is authenticated
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -21,53 +20,18 @@ export default async function Home() {
     redirect('/sign-in?callbackUrl=/dashboard');
   }
 
-  const user: User = session.user;
+  if (!session.session?.activeOrganizationId) {
+    return <NoOrganization />;
+  }
 
   return (
-    <div className="min-h-screen  py-12">
-      <div className="mx-auto max-w-lg px-6">
-        <div className="rounded-lg bg-card p-8 shadow-md">
-          <h1 className="mb-8 text-center text-3xl font-bold">
-            Dashboard
-          </h1>
+    <div className="py-12">
+      <div className="flex max-w-lg flex-col">
+        Welcome to the dashboard
 
-          <div className="flex-1 space-y-3">
-            <div>
-              <p className="text-sm text-muted-foreground">Name</p>
-              <p className="text-base font-medium">
-                {user.name}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-sm text-muted-foreground">Email</p>
-              <p className="text-base font-medium">
-                {user.email}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-sm text-muted-foreground">User ID</p>
-              <p className="font-mono text-xs text-muted-foreground">
-                {user.id}
-              </p>
-            </div>
-
-            {user.image && (
-              <div className="shrink-0">
-                <Image
-                  src={user.image}
-                  alt={user.name}
-                  width={80}
-                  height={80}
-                  className="rounded-full border-2 border-border shadow-sm"
-                />
-              </div>
-            )}
-
-            <SignOutButton />
-          </div>
-        </div>
+        <InviteOrgDialog>
+          <Button variant="outline">Invite Member</Button>
+        </InviteOrgDialog>
       </div>
     </div>
   );

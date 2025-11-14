@@ -57,7 +57,7 @@ test.describe('Sign Up', () => {
       const firstName = faker.person.firstName();
       const lastName = faker.person.lastName();
       const email = faker.internet.email().toLowerCase();
-      const password = faker.internet.password({ length: 12 });
+      const password = 'Password123';
 
       await page.goto('/sign-up');
 
@@ -96,7 +96,7 @@ test.describe('Sign Up', () => {
       const firstName = faker.person.firstName();
       const lastName = faker.person.lastName();
       const email = faker.internet.email().toLowerCase();
-      const password = faker.internet.password({ length: 12 });
+      const password = 'Password123';
 
       await page.goto('/sign-up');
 
@@ -143,7 +143,7 @@ test.describe('Sign Up', () => {
       const firstName = faker.person.firstName();
       const lastName = faker.person.lastName();
       const email = faker.internet.email().toLowerCase();
-      const password = faker.internet.password({ length: 12 });
+      const password = 'Password123';
 
       // First registration
       await page.goto('/sign-up');
@@ -157,8 +157,10 @@ test.describe('Sign Up', () => {
       // Wait for successful registration
       await page.waitForURL('/dashboard');
 
-      // Sign out (navigate to sign-in page for simplicity)
-      await page.getByRole('button', { name: 'Logout' }).click();
+      // Sign out - open user menu and click logout
+      await page.getByRole('button', { name: /User menu for/ }).click();
+      await page.getByRole('menuitem', { name: 'Log out' }).click();
+      await page.waitForURL('/sign-in');
 
       // Try to register with the same email
       await page.getByRole('link', { name: 'Sign Up' }).click();
@@ -195,7 +197,7 @@ test.describe('Sign Up', () => {
       const firstName = faker.person.firstName();
       const lastName = faker.person.lastName();
       const email = faker.internet.email().toLowerCase();
-      const password = faker.internet.password({ length: 12 });
+      const password = 'Password123';
 
       await page.goto('/sign-up');
       await page.getByLabel('First name').fill(firstName);
