@@ -134,7 +134,7 @@ export function DeleteAccountCard({
 
           <Separator className="w-full bg-destructive" />
 
-          <div className="px-6">
+          <div className="flex justify-end px-6">
             <Button
               variant="destructive"
               disabled={loading}

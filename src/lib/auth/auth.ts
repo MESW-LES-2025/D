@@ -1,11 +1,16 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { organization } from 'better-auth/plugins';
+
 import { db } from '@/lib/db';
-import * as schema from '@/schema/user';
+import * as schema from '@/schema';
 import { AppConfig } from '@/utils/appConfig';
 
 export const auth = betterAuth({
   appName: AppConfig.name,
+  plugins: [
+    organization(),
+  ],
   database: drizzleAdapter(db, {
     provider: 'pg',
     schema: {
@@ -13,6 +18,9 @@ export const auth = betterAuth({
       session: schema.sessionTable,
       account: schema.accountTable,
       verification: schema.verificationTable,
+      organization: schema.organization,
+      member: schema.member,
+      invitation: schema.invitation,
     },
   }),
   user: {

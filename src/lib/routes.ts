@@ -8,14 +8,17 @@ export const PROTECTED_ROUTES = [
 export const getCallbackURL = (
   queryParams: ReadonlyURLSearchParams,
 ): string => {
-  const callbackUrl = queryParams.get('callbackUrl');
+  const callbackUrl = queryParams.get('callbackUrl') || queryParams.get('returnTo');
 
   if (callbackUrl) {
     const isAllowedRoute = PROTECTED_ROUTES.some(route =>
       callbackUrl.startsWith(route),
     );
 
-    if (isAllowedRoute) {
+    // Also allow accept-invitation routes
+    const isAcceptInvitation = callbackUrl.startsWith('/accept-invitation/');
+
+    if (isAllowedRoute || isAcceptInvitation) {
       return callbackUrl;
     }
 
