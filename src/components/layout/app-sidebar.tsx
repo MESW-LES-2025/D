@@ -3,6 +3,7 @@
 import {
   IconDashboard,
   IconSettings,
+  IconUserShare,
 } from '@tabler/icons-react';
 import * as React from 'react';
 import { NavMain } from '@/components/layout/nav-main';
@@ -22,6 +23,11 @@ const data = {
       title: 'Dashboard',
       url: 'dashboard',
       icon: IconDashboard,
+    },
+    {
+      title: 'Team',
+      url: 'team',
+      icon: IconUserShare,
     },
   ],
   navSecondary: [
