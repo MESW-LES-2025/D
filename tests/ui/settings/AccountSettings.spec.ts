@@ -110,8 +110,8 @@ test.describe('Account Settings', () => {
       ).toBeVisible({ timeout: 5000 });
 
       // Sign out
-      await page.goto('/dashboard');
-      await page.getByRole('button', { name: 'Logout' }).click();
+      await page.locator('button[aria-label^="User menu for"]').click();
+      await page.getByRole('menuitem', { name: /log out|logout/i }).click();
       await page.waitForURL('/sign-in');
 
       // Sign in with new password
@@ -235,10 +235,13 @@ test.describe('Account Settings', () => {
     }) => {
       const { firstName, lastName } = await signInTestUser(page);
 
-      // Check if default avatar (initials) is shown
       const initials = `${firstName[0]}${lastName[0]}`.toUpperCase();
 
-      await expect(page.getByText(initials)).toBeVisible();
+      // The sidebar also renders an avatar, so use a more specific selector
+      // that targets the avatar component in the card (uses `text-2xl` class).
+      await expect(
+        page.locator(`span.text-2xl:has-text("${initials}")`),
+      ).toBeVisible();
 
       await page.getByLabel('Edit profile picture').click();
 
@@ -337,7 +340,7 @@ test.describe('Account Settings', () => {
 
       await expect(page).toHaveURL('/settings/account');
       await expect(
-        page.getByRole('heading', { name: 'Account' }),
+        page.getByRole('heading', { level: 3, name: 'Profile Picture' }),
       ).toBeVisible();
     });
 

@@ -2,6 +2,7 @@
 
 import {
   IconDashboard,
+  IconListCheck,
   IconSettings,
 } from '@tabler/icons-react';
 import * as React from 'react';
@@ -22,6 +23,11 @@ const data = {
       title: 'Dashboard',
       url: 'dashboard',
       icon: IconDashboard,
+    },
+    {
+      title: 'Tasks',
+      url: 'tasks',
+      icon: IconListCheck,
     },
   ],
   navSecondary: [
