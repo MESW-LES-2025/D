@@ -46,3 +46,8 @@ export const InviteOrganizationMemberValidation = z.object({
     .email({ message: 'Please enter a valid email address' }),
   role: z.enum(['admin', 'member', 'owner']),
 });
+
+export const UpdateMemberRoleValidation = z.object({
+  // memberId: z.string(),
+  role: z.enum(['admin', 'member', 'owner']),
+});
