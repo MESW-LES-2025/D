@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
 import { IconPlus } from '@tabler/icons-react';
 import { useState } from 'react';
-import { CreateGoalModal } from './CreateGoalModal';
 import { Button } from '@/components/ui/button';
+import { CreateGoalModal } from './CreateGoalModal';
 
 type GoalValues = any;
 
@@ -48,7 +48,14 @@ export function CreateGoalHeaderButton() {
         <IconPlus className="h-4 w-4" />
         Add Goal
       </Button>
-      <CreateGoalModal open={open} onOpenChange={setOpen} onCreate={async (v) => { await handleCreate(v); setOpen(false); }} />
+      <CreateGoalModal
+        open={open}
+        onOpenChange={setOpen}
+        onCreate={async (v) => {
+          await handleCreate(v);
+          setOpen(false);
+        }}
+      />
     </>
   );
 }

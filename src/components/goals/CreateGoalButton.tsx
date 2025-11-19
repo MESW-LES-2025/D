@@ -2,8 +2,8 @@
 
 import { IconPlus } from '@tabler/icons-react';
 import { useState } from 'react';
-import { CreateGoalModal } from './CreateGoalModal';
 import { Button } from '@/components/ui/button';
+import { CreateGoalModal } from './CreateGoalModal';
 
 type Props = {
   onCreate: (values: any) => void;

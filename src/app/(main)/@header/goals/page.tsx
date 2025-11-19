@@ -1,5 +1,5 @@
-import { DynamicHeader } from '@/components/layout/dynamic-header';
 import { CreateGoalHeaderButton } from '@/components/goals/CreateGoalHeaderButton';
+import { DynamicHeader } from '@/components/layout/dynamic-header';
 
 export const dynamic = 'force-dynamic';
 

@@ -23,8 +23,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { TeamGoalValidation } from '@/validations/TeamGoalValidation';
 import { cn } from '@/lib/utils';
+import { TeamGoalValidation } from '@/validations/TeamGoalValidation';
 
 type FormData = z.infer<typeof TeamGoalValidation>;
 
@@ -56,7 +56,7 @@ export function CreateGoalModal({ open, onOpenChange, onCreate }: Props) {
       toast.success('Goal created');
       form.reset();
       onOpenChange(false);
-    } catch (e) {
+    } catch {
       toast.error('Failed to create goal');
     } finally {
       setLoading(false);
@@ -108,10 +108,10 @@ export function CreateGoalModal({ open, onOpenChange, onCreate }: Props) {
                 <FormItem>
                   <FormLabel>Description (optional)</FormLabel>
                   <FormControl>
-                          <textarea
-                            placeholder="Add details..."
-                            className={cn(
-                              'flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2',
+                    <textarea
+                      placeholder="Add details..."
+                      className={cn(
+                        'flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2',
                       )}
                       {...field}
                     />

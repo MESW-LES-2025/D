@@ -27,7 +27,7 @@ export default function TeamGoals() {
       if (raw) {
         setGoals(JSON.parse(raw));
       }
-    } catch (e) {
+    } catch {
       toast.error('Failed to load goals');
     }
   }, []);
@@ -35,7 +35,7 @@ export default function TeamGoals() {
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
-    } catch (e) {
+    } catch {
       toast.error('Failed to save goals');
     }
   }, [goals]);
