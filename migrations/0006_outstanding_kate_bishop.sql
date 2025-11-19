@@ -3,6 +3,8 @@ CREATE TYPE "public"."task_log_action" AS ENUM('created', 'updated', 'deleted', 
 ALTER TYPE "public"."task_status" ADD VALUE 'backlog' BEFORE 'todo';--> statement-breakpoint
 ALTER TYPE "public"."task_status" ADD VALUE 'review' BEFORE 'done';--> statement-breakpoint
 ALTER TYPE "public"."task_status" ADD VALUE 'canceled';--> statement-breakpoint
+COMMIT;
+BEGIN;
 ALTER TABLE "tasks" ALTER COLUMN "priority" SET DATA TYPE text;--> statement-breakpoint
 ALTER TABLE "tasks" ALTER COLUMN "priority" SET DEFAULT 'medium'::text;--> statement-breakpoint
 DROP TYPE "public"."task_priority";--> statement-breakpoint
