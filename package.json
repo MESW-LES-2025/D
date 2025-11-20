@@ -93,7 +93,11 @@
   },
   "release": {
     "branches": [
-      "main"
+      "main",
+      {
+        "name": "staging",
+        "prerelease": "beta"
+      }
     ],
     "plugins": [
       [
