@@ -31,4 +31,21 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  databaseHooks: {
+    session: {
+      create: {
+        before: async (session: any) => {
+          const member = await db.query.member.findFirst({
+            where: (member, { eq }) => eq(member.userId, session.userId),
+          });
+          return {
+            data: {
+              ...session,
+              activeOrganizationId: member?.organizationId || null,
+            },
+          };
+        },
+      },
+    },
+  },
 });
