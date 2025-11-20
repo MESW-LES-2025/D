@@ -2,16 +2,15 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
   pull_request:
-    branches: [main]
+    branches: [main, staging]
 
 jobs:
   build:
     strategy:
       matrix:
         node-version: [22.x, 24.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     name: Build with ${{ matrix.node-version }}
     runs-on: ubuntu-latest
@@ -30,7 +29,6 @@ jobs:
         with:
           path: |
             .next/cache
-          # Generate a new cache whenever packages or source files change.
           key: nextjs-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('src/**') }}
 
       - name: Build Next.js
@@ -49,14 +47,14 @@ jobs:
       matrix:
         node-version: [22.x]
 
-    name: Run static checks
+    name: Run static checks (22.x)
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Retrieve Git history, needed to verify commits
+          fetch-depth: 0
 
       - name: Set up Node.js environment
         uses: ./.github/actions/setup-project
@@ -74,7 +72,7 @@ jobs:
       matrix:
         node-version: [22.x]
 
-    name: Run unit tests
+    name: Run unit tests (22.x)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [build]
