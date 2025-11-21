@@ -73,6 +73,7 @@
     "@types/react": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.4",
     "@vitest/browser": "^3.2.4",
+    "conventional-changelog-conventionalcommits": "^9.1.0",
     "cross-env": "^10.1.0",
     "drizzle-kit": "^0.31.5",
     "eslint": "^9.36.0",
