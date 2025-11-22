@@ -221,7 +221,7 @@ export const columns: ColumnDef<Task>[] = [
         </AvatarGroup>
       );
     },
-    filterFn: (row, id, value) => {
+    filterFn: (row, _id, value) => {
       if (!value) {
         return true;
       }
