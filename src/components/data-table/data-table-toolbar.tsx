@@ -60,7 +60,10 @@ export function DataTableToolbar<TData>({
             'h-8 border-dashed',
             assignedToMe && 'border-solid bg-accent',
           )}
-          onClick={() => setAssignedToMe(!assignedToMe)}
+          onClick={() => {
+            setAssignedToMe(!assignedToMe);
+            table.getColumn('assignees')?.setFilterValue(!assignedToMe);
+          }}
         >
           <IconUserCheck />
           My Tasks
@@ -69,7 +72,10 @@ export function DataTableToolbar<TData>({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => table.resetColumnFilters()}
+            onClick={() => {
+              table.resetColumnFilters();
+              setAssignedToMe(false);
+            }}
           >
             Reset
             <IconX />
