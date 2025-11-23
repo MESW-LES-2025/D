@@ -50,7 +50,17 @@ type Member = {
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreate: (values: FormData) => void;
+  onSave: (values: FormData) => void;
+  goal: {
+    id: string;
+    name: string;
+    description?: string;
+    dueDate?: string;
+    points?: number;
+    assigneeId?: string;
+    assigneeName?: string;
+    tasks?: { id: string; name: string }[];
+  };
   tasks?: { id: string; name: string }[];
   members?: Member[];
 };
@@ -58,31 +68,37 @@ type Props = {
 const defaultMembers: Member[] = [];
 const defaultTasks: { id: string; name: string }[] = [];
 
-export function CreateGoalModal({ open, onOpenChange, onCreate, tasks = defaultTasks, members = defaultMembers }: Props) {
+export function EditGoalModal({
+  open,
+  onOpenChange,
+  onSave,
+  goal,
+  tasks = defaultTasks,
+  members = defaultMembers,
+}: Props) {
   const [loading, setLoading] = useState(false);
   const [comboboxOpen, setComboboxOpen] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(TeamGoalValidation),
     defaultValues: {
-      title: '',
-      pointsReward: '',
-      description: '',
-      dueDate: '',
-      assigneeIds: [],
-      taskIds: [],
+      title: goal.name || '',
+      pointsReward: goal.points?.toString() || '',
+      description: goal.description || '',
+      dueDate: goal.dueDate ? new Date(goal.dueDate).toISOString().split('T')[0] : '',
+      assigneeIds: goal.assigneeId ? [goal.assigneeId] : [],
+      taskIds: goal.tasks?.map(t => t.id) || [],
     },
   });
 
   const submit = (values: FormData) => {
     setLoading(true);
     try {
-      onCreate(values);
-      toast.success('Goal created');
-      form.reset();
+      onSave(values);
+      toast.success('Goal updated');
       onOpenChange(false);
     } catch {
-      toast.error('Failed to create goal');
+      toast.error('Failed to update goal');
     } finally {
       setLoading(false);
     }
@@ -95,8 +111,8 @@ export function CreateGoalModal({ open, onOpenChange, onCreate, tasks = defaultT
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Create Goal</DialogTitle>
-          <DialogDescription>Enter the details to create a new goal</DialogDescription>
+          <DialogTitle>Edit Goal</DialogTitle>
+          <DialogDescription>Update the goal details</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -282,7 +298,7 @@ export function CreateGoalModal({ open, onOpenChange, onCreate, tasks = defaultT
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading}>{loading ? 'Creating...' : 'Create'}</Button>
+              <Button type="submit" disabled={loading}>{loading ? 'Saving...' : 'Save'}</Button>
             </div>
           </form>
         </Form>
@@ -291,4 +307,4 @@ export function CreateGoalModal({ open, onOpenChange, onCreate, tasks = defaultT
   );
 }
 
-export default CreateGoalModal;
+export default EditGoalModal;
