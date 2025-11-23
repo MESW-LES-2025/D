@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+import TeamGoals from '@/components/TeamGoals';
 import { InviteOrgDialog } from '@/components/dialogs/invite-org-dialog';
 import { NoOrganization } from '@/components/empty/no-organization';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,10 @@ export default async function Home() {
         <InviteOrgDialog>
           <Button variant="outline">Invite Member</Button>
         </InviteOrgDialog>
+      </div>
+
+      <div className="mt-12">
+        <TeamGoals />
       </div>
     </div>
   );
