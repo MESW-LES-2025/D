@@ -1,7 +1,7 @@
 import { pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 import { userTable } from '@/schema/user';
 
-export const organization = pgTable('organization', {
+export const organizationTable = pgTable('organization', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   slug: text('slug').notNull().unique(),
@@ -10,11 +10,11 @@ export const organization = pgTable('organization', {
   metadata: text('metadata'),
 });
 
-export const member = pgTable('member', {
+export const memberTable = pgTable('member', {
   id: text('id').primaryKey(),
   organizationId: text('organization_id')
     .notNull()
-    .references(() => organization.id, { onDelete: 'cascade' }),
+    .references(() => organizationTable.id, { onDelete: 'cascade' }),
   userId: text('user_id')
     .notNull()
     .references(() => userTable.id, { onDelete: 'cascade' }),
@@ -22,11 +22,11 @@ export const member = pgTable('member', {
   createdAt: timestamp('created_at').notNull(),
 });
 
-export const invitation = pgTable('invitation', {
+export const invitationTable = pgTable('invitation', {
   id: text('id').primaryKey(),
   organizationId: text('organization_id')
     .notNull()
-    .references(() => organization.id, { onDelete: 'cascade' }),
+    .references(() => organizationTable.id, { onDelete: 'cascade' }),
   email: text('email').notNull(),
   role: text('role'),
   status: text('status').default('pending').notNull(),

@@ -18,9 +18,9 @@ export const auth = betterAuth({
       session: schema.sessionTable,
       account: schema.accountTable,
       verification: schema.verificationTable,
-      organization: schema.organization,
-      member: schema.member,
-      invitation: schema.invitation,
+      organization: schema.organizationTable,
+      member: schema.memberTable,
+      invitation: schema.invitationTable,
     },
   }),
   user: {
@@ -30,5 +30,22 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+  },
+  databaseHooks: {
+    session: {
+      create: {
+        before: async (session: any) => {
+          const member = await db.query.memberTable.findFirst({
+            where: (member, { eq }) => eq(member.userId, session.userId),
+          });
+          return {
+            data: {
+              ...session,
+              activeOrganizationId: member?.organizationId || null,
+            },
+          };
+        },
+      },
+    },
   },
 });
