@@ -2,6 +2,7 @@
 
 import {
   IconDashboard,
+  IconRocket,
   IconListCheck,
   IconSettings,
   IconUserShare,
@@ -26,6 +27,9 @@ const data = {
       icon: IconDashboard,
     },
     {
+      title: 'Goals',
+      url: 'goals',
+      icon: IconRocket,
       title: 'Tasks',
       url: 'tasks',
       icon: IconListCheck,
