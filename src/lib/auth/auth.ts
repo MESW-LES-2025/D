@@ -35,7 +35,7 @@ export const auth = betterAuth({
     session: {
       create: {
         before: async (session: any) => {
-          const member = await db.query.member.findFirst({
+          const member = await db.query.memberTable.findFirst({
             where: (member, { eq }) => eq(member.userId, session.userId),
           });
           return {
