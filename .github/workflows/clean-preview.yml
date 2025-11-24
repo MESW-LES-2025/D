@@ -1,0 +1,41 @@
+name: Cleanup Preview
+on:
+  pull_request:
+    types: [closed]
+    branches: [staging, main]
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    name: Cleanup Preview Resources
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Get branch name
+        id: branch_name
+        uses: tj-actions/branch-names@v8
+
+      - name: Delete Neon Branch
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch: preview/pr-${{ github.event.number }}-${{ steps.branch_name.outputs.current_branch }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Delete Vercel Preview Deployments
+        run: |
+          # List and delete all preview deployments for this PR
+          vercel ls --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ vars.VERCEL_ORG_ID }} | \
+            grep -oP 'https://[^\s]+' | \
+            while read url; do
+              vercel rm "$url" --token=${{ secrets.VERCEL_TOKEN }} --yes || true
+            done
+          echo "✅ Deleted Vercel preview deployments"
+        env:
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
