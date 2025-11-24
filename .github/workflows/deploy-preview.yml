@@ -58,14 +58,38 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-          NPM_CLIENT: npm
-          # Override DATABASE_URL for the preview build
           DATABASE_URL: ${{ steps.create-branch.outputs.database_url }}
+          SKIP_ENV_VALIDATION: true
+          CI: true
+
+      - name: Set Vercel Environment Variables
+        run: |
+          # Set DATABASE_URL for this specific deployment
+          vercel env add DATABASE_URL preview "${{ steps.create-branch.outputs.database_url }}" \
+            --token=${{ secrets.VERCEL_TOKEN }} \
+            --yes || echo "Variable may already exist"
+
+          # Get the preview deployment URL to use as BETTER_AUTH_URL
+          PREVIEW_URL="https://task-up-git-${{ github.head_ref }}-eduardomirand-s-projects.vercel.app"
+
+          vercel env add BETTER_AUTH_URL preview "$PREVIEW_URL" \
+            --token=${{ secrets.VERCEL_TOKEN }} \
+            --yes || echo "Variable may already exist"
+
+          vercel env add NEXT_PUBLIC_APP_URL preview "$PREVIEW_URL" \
+            --token=${{ secrets.VERCEL_TOKEN }} \
+            --yes || echo "Variable may already exist"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Deploy to Vercel
         id: deploy
         run: |
-          url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          url=$(vercel deploy --prebuilt \
+            --token=${{ secrets.VERCEL_TOKEN }} \
+            --env DATABASE_URL="${{ steps.create-branch.outputs.database_url }}" \
+            --build-env DATABASE_URL="${{ steps.create-branch.outputs.database_url }}")
           echo "url=$url" >> $GITHUB_OUTPUT
           echo "### 🚀 Preview Deployment" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -73,8 +97,6 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-          # Set the preview database URL as env var
-          DATABASE_URL: ${{ steps.create-branch.outputs.database_url }}
 
       - name: Comment PR with Preview URL
         uses: actions/github-script@v7
