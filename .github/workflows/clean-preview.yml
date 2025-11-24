@@ -1,0 +1,57 @@
+name: Cleanup Preview
+on:
+  pull_request:
+    types: [closed]
+    branches: [staging, main]
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    name: Cleanup Preview Resources
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Delete Vercel Preview Deployments
+        run: |
+          # Get all deployments for this project
+          DEPLOYMENTS=$(vercel ls --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_ORG_ID }} | grep "preview-pr-${{ github.event.pull_request.number }}" || true)
+
+          # Delete each deployment
+          if [ -n "$DEPLOYMENTS" ]; then
+            vercel ls --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_ORG_ID }} | \
+              grep -oP 'https://[^\s]+' | \
+              while read url; do
+                vercel rm "$url" --token=${{ secrets.VERCEL_TOKEN }} --yes || true
+              done
+            echo "✅ Deleted Vercel preview deployments"
+          else
+            echo "⚠️ No Vercel deployments found for this PR"
+          fi
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Delete Neon Branch
+        run: |
+          BRANCH_NAME="preview-pr-${{ github.event.pull_request.number }}"
+
+          # Get branch ID first
+          BRANCHES=$(curl -X GET \
+            "https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/branches" \
+            -H "Authorization: Bearer ${{ secrets.NEON_API_KEY }}")
+
+          BRANCH_ID=$(echo $BRANCHES | jq -r ".branches[] | select(.name==\"$BRANCH_NAME\") | .id")
+
+          if [ -n "$BRANCH_ID" ]; then
+            curl -X DELETE \
+              "https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/branches/$BRANCH_ID" \
+              -H "Authorization: Bearer ${{ secrets.NEON_API_KEY }}"
+            echo "✅ Deleted Neon branch: $BRANCH_NAME"
+          else
+            echo "⚠️ Neon branch not found: $BRANCH_NAME"
+          fi
