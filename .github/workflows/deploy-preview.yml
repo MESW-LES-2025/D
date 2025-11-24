@@ -1,15 +1,19 @@
 name: Deploy Preview
-
 on:
   pull_request:
     branches: [staging, main]
+
+# Permissions for the GITHUB_TOKEN
+permissions:
+  contents: read
+  pull-requests: write
+  deployments: write
 
 jobs:
   deploy:
     name: Deploy to Vercel - Preview
     runs-on: ubuntu-latest
     timeout-minutes: 10
-
     steps:
       - uses: actions/checkout@v4
 
@@ -25,6 +29,24 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
+      # Create a preview branch in Neon
+      - name: Create Neon Branch
+        id: create-branch
+        run: |
+          BRANCH_NAME="preview-pr-${{ github.event.pull_request.number }}"
+
+          # Create branch via Neon API
+          RESPONSE=$(curl -X POST \
+            "https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/branches" \
+            -H "Authorization: Bearer ${{ secrets.NEON_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"branch\": {\"name\": \"$BRANCH_NAME\"}}")
+
+          # Extract the connection string
+          DATABASE_URL=$(echo $RESPONSE | jq -r '.connection_uris[0].connection_uri')
+          echo "database_url=$DATABASE_URL" >> $GITHUB_OUTPUT
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
         env:
@@ -37,6 +59,8 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           NPM_CLIENT: npm
+          # Override DATABASE_URL for the preview build
+          DATABASE_URL: ${{ steps.create-branch.outputs.database_url }}
 
       - name: Deploy to Vercel
         id: deploy
@@ -49,6 +73,8 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          # Set the preview database URL as env var
+          DATABASE_URL: ${{ steps.create-branch.outputs.database_url }}
 
       - name: Comment PR with Preview URL
         uses: actions/github-script@v7
@@ -58,5 +84,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 🚀 Preview Deployment Ready!\n\n**Preview URL:** ${{ steps.deploy.outputs.url }}\n\n✅ Your changes are deployed and ready for review.`
+              body: `## 🚀 Preview Deployment Ready!\n\n**Preview URL:** ${{ steps.deploy.outputs.url }}\n**Database Branch:** ${{ steps.create-branch.outputs.branch_name }}\n\n✅ Your changes are deployed and ready for review.`
             })
