@@ -1,3 +1,4 @@
+import { CreateGoalHeaderButton } from '@/components/goals/CreateGoalHeaderButton';
 import { DynamicHeader } from '@/components/layout/dynamic-header';
 import { CreateTaskButton } from '@/components/tasks/CreateTaskButton';
 import { db } from '@/lib/db';
@@ -27,7 +28,12 @@ export default async function DashboardHeader() {
   return (
     <DynamicHeader
       breadcrumbs={[{ label: 'Dashboard' }]}
-      actions={<CreateTaskButton users={users} />}
+      actions={(
+        <>
+          <CreateGoalHeaderButton />
+          <CreateTaskButton users={users} />
+        </>
+      )}
     />
   );
 }
