@@ -6,8 +6,8 @@
   "scripts": {
     "dev:next": "next dev --turbopack",
     "dev": "run-p db-server:file dev:*",
-    "build:next": "next build",
-    "build": "run-p db-server:memory build:* --race",
+    "build": "next build",
+    "build:local": "run-p db-server:memory build:* --race",
     "start": "next start",
     "build-stats": "cross-env ANALYZE=true npm run build",
     "clean": "rimraf .next out coverage",
