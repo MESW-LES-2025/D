@@ -6,6 +6,8 @@ import type {
   SortingState,
   VisibilityState,
 } from '@tanstack/react-table';
+
+import type { TaskWithAssignees } from '@/lib/task/task-types';
 import {
   flexRender,
   getCoreRowModel,
@@ -16,10 +18,11 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import * as React from 'react';
 
+import * as React from 'react';
 import { DataTablePagination } from '@/components/data-table/data-table-pagination';
 import { DataTableToolbar } from '@/components/data-table/data-table-toolbar';
+import { TaskSheet } from '@/components/tasks/task-sheet';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 type DataTableProps<TData, TValue> = {
@@ -31,6 +34,8 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
+  const [selectedRow, setSelectedRow] = React.useState<TData | null>(null);
+  const [sheetOpen, setSheetOpen] = React.useState(false);
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility]
     = React.useState<VisibilityState>({});
@@ -96,6 +101,11 @@ export function DataTable<TData, TValue>({
                     <TableRow
                       key={row.id}
                       data-state={row.getIsSelected() && 'selected'}
+                      onClick={() => {
+                        setSelectedRow(row.original);
+                        setSheetOpen(true);
+                      }}
+                      className="cursor-pointer"
                     >
                       {row.getVisibleCells().map(cell => (
                         <TableCell key={cell.id}>
@@ -122,6 +132,9 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <DataTablePagination table={table} />
+
+      {/* Sheet opens when a row is clicked */}
+      <TaskSheet open={sheetOpen} onOpenChangeAction={setSheetOpen} task={selectedRow as TaskWithAssignees} />
     </div>
   );
 }
