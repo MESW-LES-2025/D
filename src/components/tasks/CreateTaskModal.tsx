@@ -1,7 +1,7 @@
 'use client';
 import type { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { IconCheck, IconSelector } from '@tabler/icons-react';
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -68,11 +68,10 @@ export function CreateTaskModal({ open, onOpenChange, users }: Props) {
     defaultValues: {
       name: '',
       description: '',
-      priority: 'normal',
+      priority: 'medium',
       difficulty: 'medium',
       dueDate: undefined,
-      assigneeId: undefined,
-      groupId: undefined,
+      assigneeIds: [],
     },
   });
 
@@ -101,7 +100,8 @@ export function CreateTaskModal({ open, onOpenChange, users }: Props) {
     });
   };
 
-  const selectedUser = users.find(user => user.id === form.watch('assigneeId'));
+  const selectedUserIds = form.watch('assigneeIds') || [];
+  const selectedUsers = users.filter(user => selectedUserIds.includes(user.id));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -152,7 +152,7 @@ export function CreateTaskModal({ open, onOpenChange, users }: Props) {
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="normal">Normal</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
                       <SelectItem value="high">High</SelectItem>
                       <SelectItem value="urgent">Urgent</SelectItem>
                     </SelectContent>
@@ -221,13 +221,13 @@ export function CreateTaskModal({ open, onOpenChange, users }: Props) {
               )}
             />
 
-            {/* --- Assignee --- */}
+            {/* --- Assignees --- */}
             <FormField
               control={form.control}
-              name="assigneeId"
+              name="assigneeIds"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Assignee (optional)</FormLabel>
+                  <FormLabel>Assignees (optional)</FormLabel>
                   <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -236,13 +236,13 @@ export function CreateTaskModal({ open, onOpenChange, users }: Props) {
                           role="combobox"
                           className={cn(
                             'w-full justify-between',
-                            !field.value && 'text-muted-foreground',
+                            selectedUsers.length === 0 && 'text-muted-foreground',
                           )}
                         >
-                          {selectedUser
-                            ? `${selectedUser.name} (${selectedUser.email})`
-                            : 'Select user...'}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          {selectedUsers.length > 0
+                            ? `${selectedUsers.length} user${selectedUsers.length > 1 ? 's' : ''} selected`
+                            : 'Select users...'}
+                          <IconSelector className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
@@ -251,43 +251,31 @@ export function CreateTaskModal({ open, onOpenChange, users }: Props) {
                         <CommandInput placeholder="Search users..." />
                         <CommandEmpty>No users found.</CommandEmpty>
                         <CommandGroup>
-                          <CommandItem
-                            value=""
-                            onSelect={() => {
-                              field.onChange(undefined);
-                              setComboboxOpen(false);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                'mr-2 h-4 w-4',
-                                !field.value
-                                  ? 'opacity-100'
-                                  : 'opacity-0',
-                              )}
-                            />
-                            None
-                          </CommandItem>
-                          {users.map(user => (
-                            <CommandItem
-                              key={user.id}
-                              value={`${user.name} ${user.email}`}
-                              onSelect={() => {
-                                field.onChange(user.id);
-                                setComboboxOpen(false);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  'mr-2 h-4 w-4',
-                                  field.value === user.id
-                                    ? 'opacity-100'
-                                    : 'opacity-0',
-                                )}
-                              />
-                              {`${user.name} (${user.email})`}
-                            </CommandItem>
-                          ))}
+                          {users.map((user) => {
+                            const isSelected = selectedUserIds.includes(user.id);
+                            return (
+                              <CommandItem
+                                key={user.id}
+                                value={`${user.name} ${user.email}`}
+                                onSelect={() => {
+                                  const newValue = isSelected
+                                    ? selectedUserIds.filter(id => id !== user.id)
+                                    : [...selectedUserIds, user.id];
+                                  field.onChange(newValue);
+                                }}
+                              >
+                                <IconCheck
+                                  className={cn(
+                                    'mr-2 h-4 w-4',
+                                    isSelected
+                                      ? 'opacity-100'
+                                      : 'opacity-0',
+                                  )}
+                                />
+                                {`${user.name} (${user.email})`}
+                              </CommandItem>
+                            );
+                          })}
                         </CommandGroup>
                       </Command>
                     </PopoverContent>

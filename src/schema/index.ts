@@ -8,7 +8,6 @@
  * Prefer named/type-only exports and avoid modules with import-side effects.
  */
 
-export * from './counter';
 export * from './organization';
 export * from './task';
 export * from './user';

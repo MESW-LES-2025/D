@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
-import { CounterForm } from '@/components/CounterForm';
-import { CurrentCount } from '@/components/CurrentCount';
+import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: 'TaskUp',
@@ -8,23 +7,6 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="mx-auto max-w-lg px-6">
-        <div className="rounded-lg bg-white p-8 shadow-md">
-          <h1 className="mb-8 text-center text-3xl font-bold text-gray-800">
-            Setup App
-          </h1>
-
-          <div className="space-y-6">
-            <div className="text-center">
-            </div>
-
-            <CurrentCount />
-            <CounterForm />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  // Redirect to the dashboard while we don't have a landing page yet
+  redirect('/dashboard');
 }

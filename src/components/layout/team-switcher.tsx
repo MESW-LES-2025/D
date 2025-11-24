@@ -49,7 +49,7 @@ export function TeamSwitcher() {
   }
 
   // Show no organizations state
-  if (!organizations || organizations.length === 0) {
+  if (!organizations || organizations.length === 0 || !activeOrg) {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
@@ -97,11 +97,6 @@ export function TeamSwitcher() {
     );
   }
 
-  // At this point we have organizations and activeOrg
-  if (!activeOrg) {
-    return null;
-  }
-
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -111,7 +106,7 @@ export function TeamSwitcher() {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <div className="flex aspect-square size-8 items-center justify-center overflow-hidden rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 {activeOrg.logo
                   ? (
                       <Image
@@ -119,11 +114,11 @@ export function TeamSwitcher() {
                         alt={activeOrg.name}
                         width={32}
                         height={32}
-                        className="size-full object-cover"
+                        className="size-full rounded-lg object-cover"
                       />
                     )
                   : (
-                      <IconBuilding className="size-4" />
+                      <IconBuilding className="shrink-0 rounded-lg object-cover" />
                     )}
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">

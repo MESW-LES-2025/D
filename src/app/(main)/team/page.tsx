@@ -23,8 +23,8 @@ async function getActiveOrganization(organizationId: undefined | null | string) 
   try {
     // Query the organization table to get the organization name
     const organizations = await db.select()
-      .from(organizationSchema.organization)
-      .where(eq(organizationSchema.organization.id, organizationId));
+      .from(organizationSchema.organizationTable)
+      .where(eq(organizationSchema.organizationTable.id, organizationId));
     return organizations[0] || null;
   } catch (error) {
     console.error('Error fetching organization:', error);
@@ -50,16 +50,16 @@ async function getUsersInOrganization(organizationId: string | null | undefined)
     // Get users who are members of the current organization
     const organizationUsers = await db.select({
       id: userTable.id,
-      memberId: organizationSchema.member.id,
+      memberId: organizationSchema.memberTable.id,
       name: userTable.name,
-      role: organizationSchema.member.role,
+      role: organizationSchema.memberTable.role,
       email: userTable.email,
       image: userTable.image,
       createdAt: userTable.createdAt,
     })
-      .from(organizationSchema.member)
-      .innerJoin(userTable, eq(organizationSchema.member.userId, userTable.id))
-      .where(eq(organizationSchema.member.organizationId, organizationId));
+      .from(organizationSchema.memberTable)
+      .innerJoin(userTable, eq(organizationSchema.memberTable.userId, userTable.id))
+      .where(eq(organizationSchema.memberTable.organizationId, organizationId));
 
     return organizationUsers;
   } catch (error) {

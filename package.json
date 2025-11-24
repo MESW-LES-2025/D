@@ -6,8 +6,8 @@
   "scripts": {
     "dev:next": "next dev --turbopack",
     "dev": "run-p db-server:file dev:*",
-    "build:next": "next build",
-    "build": "run-p db-server:memory build:* --race",
+    "build": "next build",
+    "build:local": "run-p db-server:memory build:* --race",
     "start": "next start",
     "build-stats": "cross-env ANALYZE=true npm run build",
     "clean": "rimraf .next out coverage",
@@ -36,15 +36,18 @@
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-switch": "^1.2.6",
+    "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@t3-oss/env-nextjs": "^0.13.8",
     "@tabler/icons-react": "^3.35.0",
+    "@tanstack/react-table": "^8.21.3",
     "better-auth": "^1.3.32",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "drizzle-orm": "^0.44.5",
-    "lucide-react": "^0.548.0",
+    "framer-motion": "^12.23.24",
     "next": "^16.0.0",
     "next-themes": "^0.4.6",
     "pg": "^8.16.3",
@@ -70,6 +73,7 @@
     "@types/react": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.4",
     "@vitest/browser": "^3.2.4",
+    "conventional-changelog-conventionalcommits": "^9.1.0",
     "cross-env": "^10.1.0",
     "drizzle-kit": "^0.31.5",
     "eslint": "^9.36.0",
@@ -93,7 +97,11 @@
   },
   "release": {
     "branches": [
-      "main"
+      "main",
+      {
+        "name": "staging",
+        "prerelease": "beta"
+      }
     ],
     "plugins": [
       [
