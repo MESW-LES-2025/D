@@ -3,7 +3,6 @@ on:
   pull_request:
     branches: [staging, main]
 
-# Permissions for the GITHUB_TOKEN
 permissions:
   contents: read
   pull-requests: write
@@ -17,6 +16,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Get branch name
+        id: branch_name
+        uses: tj-actions/branch-names@v8
+
+      - name: Create Neon Branch
+        id: create_neon_branch
+        uses: neondatabase/create-branch-action@v5
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch_name: preview/pr-${{ github.event.number }}-${{ steps.branch_name.outputs.current_branch }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -29,24 +40,6 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
-      # Create a preview branch in Neon
-      - name: Create Neon Branch
-        id: create-branch
-        run: |
-          BRANCH_NAME="preview-pr-${{ github.event.pull_request.number }}"
-
-          # Create branch via Neon API
-          RESPONSE=$(curl -X POST \
-            "https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/branches" \
-            -H "Authorization: Bearer ${{ secrets.NEON_API_KEY }}" \
-            -H "Content-Type: application/json" \
-            -d "{\"branch\": {\"name\": \"$BRANCH_NAME\"}}")
-
-          # Extract the connection string
-          DATABASE_URL=$(echo $RESPONSE | jq -r '.connection_uris[0].connection_uri')
-          echo "database_url=$DATABASE_URL" >> $GITHUB_OUTPUT
-          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
-
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
         env:
@@ -58,38 +51,16 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-          DATABASE_URL: ${{ steps.create-branch.outputs.database_url }}
+          DATABASE_URL: ${{ steps.create_neon_branch.outputs.db_url_with_pooler }}
           SKIP_ENV_VALIDATION: true
           CI: true
-
-      - name: Set Vercel Environment Variables
-        run: |
-          # Set DATABASE_URL for this specific deployment
-          vercel env add DATABASE_URL preview "${{ steps.create-branch.outputs.database_url }}" \
-            --token=${{ secrets.VERCEL_TOKEN }} \
-            --yes || echo "Variable may already exist"
-
-          # Get the preview deployment URL to use as BETTER_AUTH_URL
-          PREVIEW_URL="https://task-up-git-${{ github.head_ref }}-eduardomirand-s-projects.vercel.app"
-
-          vercel env add BETTER_AUTH_URL preview "$PREVIEW_URL" \
-            --token=${{ secrets.VERCEL_TOKEN }} \
-            --yes || echo "Variable may already exist"
-
-          vercel env add NEXT_PUBLIC_APP_URL preview "$PREVIEW_URL" \
-            --token=${{ secrets.VERCEL_TOKEN }} \
-            --yes || echo "Variable may already exist"
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Deploy to Vercel
         id: deploy
         run: |
           url=$(vercel deploy --prebuilt \
             --token=${{ secrets.VERCEL_TOKEN }} \
-            --env DATABASE_URL="${{ steps.create-branch.outputs.database_url }}" \
-            --build-env DATABASE_URL="${{ steps.create-branch.outputs.database_url }}")
+            --env DATABASE_URL="${{ steps.create_neon_branch.outputs.db_url_with_pooler }}")
           echo "url=$url" >> $GITHUB_OUTPUT
           echo "### 🚀 Preview Deployment" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -106,5 +77,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 🚀 Preview Deployment Ready!\n\n**Preview URL:** ${{ steps.deploy.outputs.url }}\n**Database Branch:** ${{ steps.create-branch.outputs.branch_name }}\n\n✅ Your changes are deployed and ready for review.`
+              body: `## 🚀 Preview Deployment Ready!\n\n**Preview URL:** ${{ steps.deploy.outputs.url }}\n**Database Branch:** preview/pr-${{ github.event.number }}-${{ steps.branch_name.outputs.current_branch }}\n\n✅ Your changes are deployed and ready for review.`
             })
