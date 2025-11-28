@@ -62,7 +62,7 @@ export function DataTableToolbar<TData>({
           )}
           onClick={() => {
             setAssignedToMe(!assignedToMe);
-            table.getColumn('assignees')?.setFilterValue(!assignedToMe);
+            table.getColumn('assignees')?.setFilterValue(!assignedToMe ? true : undefined);
           }}
         >
           <IconUserCheck />
