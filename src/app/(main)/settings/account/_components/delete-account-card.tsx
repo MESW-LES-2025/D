@@ -112,7 +112,7 @@ export function DeleteAccountCard({
   return (
     <>
       <Card
-        className={cn('w-full py-4 border-destructive', className)}
+        className={cn('bg-card w-full py-4 border-destructive', className)}
         {...props}
       >
         <CardHeader className="gap-0 pb-4">
