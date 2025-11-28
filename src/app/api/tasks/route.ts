@@ -14,7 +14,7 @@ export async function GET() {
 
   try {
     const tasks = await db
-      .select({ id: taskTable.id, name: taskTable.tittle })
+      .select({ id: taskTable.id, name: taskTable.title })
       .from(taskTable)
       .where(eq(taskTable.organizationId, session.session?.activeOrganizationId ?? ''));
 
