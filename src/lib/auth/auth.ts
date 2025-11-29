@@ -48,4 +48,7 @@ export const auth = betterAuth({
       },
     },
   },
+  trustedOrigins: [
+    'https://*.vercel.app', // trust all HTTPS subdomains of vercel.app, for preview deployments
+  ],
 });
