@@ -3,8 +3,6 @@ import { Pool } from 'pg';
 import { Env } from '@/lib/env';
 import * as schema from '@/schema';
 
-// Need a database for production? Check out https://www.prisma.io/?via=nextjsboilerplate
-// Tested and compatible with Next.js Boilerplate
 export const createDbConnection = () => {
   const pool = new Pool({
     connectionString: Env.DATABASE_URL,
