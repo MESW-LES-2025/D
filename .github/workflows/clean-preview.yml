@@ -31,17 +31,6 @@ jobs:
 
       - name: Delete Vercel Preview Deployments
         run: |
-          # List and delete all preview deployments for this PR
-          vercel ls --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ vars.VERCEL_ORG_ID }} --yes --json | \
-            jq -r --arg branch "$BRANCH_NAME" '.deployments[] | select(.meta.githubCommitRef == $branch and .meta.githubPrId != null and .environment == "preview") | .url' | \
-            while read url; do
-              vercel rm "$url" --token=${{ secrets.VERCEL_TOKEN }} --yes || true
-            done
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
-        run: |
           PR_NAME="preview-pr-${{ github.event.number }}"
 
           echo "🔍 Searching for deployments matching: $PR_NAME"
