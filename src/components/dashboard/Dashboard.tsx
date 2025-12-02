@@ -20,8 +20,8 @@ type Task = {
   score: number;
 };
 
-type Assignee = {
-  taskId: string;
+type usersWithTasks = {
+  taskId: string | null;
   user: {
     id: string;
     name: string;
@@ -31,7 +31,7 @@ type Assignee = {
 
 type DashboardProps = {
   monthlyDoneTasks: Task[];
-  assignees: Assignee[];
+  usersWithTasks: usersWithTasks[];
   currentUsermonthlyTasks: Task[];
   serverDate: Date;
   currentUserId: string;
@@ -47,16 +47,16 @@ type UserStats = {
 
 export function Dashboard({
   monthlyDoneTasks,
-  assignees,
+  usersWithTasks,
   currentUsermonthlyTasks,
   serverDate,
   currentUserId,
 }: DashboardProps) {
   const [timeFilter, setTimeFilter] = useState<'week' | 'month'>('month');
 
-  if (monthlyDoneTasks.length === 0) {
+  if (monthlyDoneTasks.length === 0 && currentUsermonthlyTasks.length === 0) {
     return (
-      <EmptyCard />
+      <EmptyCard timeFilter={null} />
     );
   }
 
@@ -79,7 +79,7 @@ export function Dashboard({
     currentUserTasksFiltered = currentUsermonthlyTasks.filter(t => firstDayOfWeek <= t.dueDate! && t.dueDate! <= lastDayOfWeek);
   }
 
-  if (tasksFiltered.length === 0) {
+  if (tasksFiltered.length === 0 && currentUserTasksFiltered.length === 0) {
     return (
       <>
         <ViewToggle
@@ -92,7 +92,7 @@ export function Dashboard({
           aria-label="Time filter"
           className="w-fit"
         />
-        <EmptyCard />
+        <EmptyCard timeFilter={timeFilter} />
       </>
     );
   }
@@ -103,25 +103,25 @@ export function Dashboard({
   // Calculate total points earned by current user from completed tasks
   const pointsEarned = currentUserTasksDone.reduce((sum, task) => sum + (task.score || 0), 0);
 
-  // Aggregate task statistics for all assignees
-  const usersRecord = assignees.reduce<Record<string, UserStats>>((acc, assignee) => {
-    let user = acc[assignee.user.id];
+  // Aggregate task statistics for all users
+  const usersRecord = usersWithTasks.reduce<Record<string, UserStats>>((acc, i) => {
+    let user = acc[i.user.id];
     if (!user) {
       user = {
-        image: assignee.user.image,
-        name: assignee.user.name,
+        image: i.user.image,
+        name: i.user.name,
         taskScore: 0,
         taskCount: 0,
-        isCurrentUser: currentUserId === assignee.user.id,
+        isCurrentUser: currentUserId === i.user.id,
       };
     }
 
-    const task = tasksFiltered.find(task => task.id === assignee.taskId);
+    const task = tasksFiltered.find(task => task.id === i.taskId);
 
     user.taskScore += task?.score || 0;
     user.taskCount += task ? 1 : 0;
 
-    acc[assignee.user.id] = user;
+    acc[i.user.id] = user;
 
     return acc;
   }, {});

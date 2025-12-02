@@ -6,7 +6,7 @@ import { Dashboard } from '@/components/dashboard/Dashboard';
 import { NoOrganization } from '@/components/empty/no-organization';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
-import { taskAssigneesTable, taskTable, userTable } from '@/schema';
+import { memberTable, taskAssigneesTable, taskTable, userTable } from '@/schema';
 
 export const metadata: Metadata = {
   title: 'TaskUp | Dashboard',
@@ -39,20 +39,22 @@ async function fetchMonthlyDoneTasks(organizationId: string, firstDay: Date, las
   }
 }
 
-async function fetchAssigneesByTaskIs(taskIds: string[]) {
+async function fetchOrganizationUsersWithTasks(organizationId: string, taskIds: string[]) {
   try {
+    // Get users who are members of the current organization
     return await db
       .select({
-        taskId: taskAssigneesTable.taskId,
+        taskId: taskAssigneesTable.taskId ?? null,
         user: {
           id: userTable.id,
           name: userTable.name,
           image: userTable.image,
         },
       })
-      .from(taskAssigneesTable)
-      .innerJoin(userTable, eq(taskAssigneesTable.userId, userTable.id))
-      .where(inArray(taskAssigneesTable.taskId, taskIds));
+      .from(memberTable)
+      .innerJoin(userTable, eq(memberTable.userId, userTable.id))
+      .leftJoin(taskAssigneesTable, and(eq(taskAssigneesTable.userId, userTable.id), inArray(taskAssigneesTable.taskId, taskIds)))
+      .where(eq(memberTable.organizationId, organizationId));
   } catch (error) {
     console.error('Error fetching assignees:', error);
     return [];
@@ -104,15 +106,11 @@ export default async function Home() {
   // Fetch tasks from the current month with status equal 'done'
   const monthlyDoneTasks = await fetchMonthlyDoneTasks(session.session?.activeOrganizationId, firstDay, lastDay);
 
-  // Fetch assignees from the tasks
-  const assignees = monthlyDoneTasks.length > 0
-    ? await fetchAssigneesByTaskIs(monthlyDoneTasks.map(t => t.id))
-    : [];
+  // Fetch users from the organization with their tasks
+  const usersWithTasks = await fetchOrganizationUsersWithTasks(session.session?.activeOrganizationId, monthlyDoneTasks.map(t => t.id));
 
   // Fetch all tasks from the current month and from the current user
-  const currentUsermonthlyTasks = monthlyDoneTasks.length > 0
-    ? await fetchUserMonthlyTasks(session.session?.userId, session.session?.activeOrganizationId, firstDay, lastDay)
-    : [];
+  const currentUsermonthlyTasks = await fetchUserMonthlyTasks(session.session?.userId, session.session?.activeOrganizationId, firstDay, lastDay);
 
   return (
     <div className="h-full flex-1 flex-col gap-8 px-8 py-4 md:flex">
@@ -122,13 +120,13 @@ export default async function Home() {
             Dashboard
           </h2>
           <p className="text-muted-foreground">
-            Manage your tasks effectively with our intuitive task tracker.
+            Manage your monthly tasks effectively with our intuitive task tracker.
           </p>
         </div>
       </div>
       <Dashboard
         monthlyDoneTasks={monthlyDoneTasks}
-        assignees={assignees}
+        usersWithTasks={usersWithTasks}
         currentUsermonthlyTasks={currentUsermonthlyTasks}
         currentUserId={session.session?.userId}
         serverDate={today} // This avoid errors if the user is in a different timezone

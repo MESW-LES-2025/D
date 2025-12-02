@@ -3,7 +3,11 @@
 import { ClipboardList } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 
-export function EmptyCard() {
+type EmptyCardProps = {
+  timeFilter: 'week' | 'month' | null;
+};
+
+export function EmptyCard({ timeFilter = null }: EmptyCardProps) {
   return (
     <Card className="border-muted-foreground/40 bg-muted/5">
       <CardContent className="flex items-center gap-4 p-6">
@@ -15,7 +19,7 @@ export function EmptyCard() {
             No tasks yet
           </h3>
           <p className="text-sm text-muted-foreground">
-            Create your first task to start tracking your progress and unlock insights here.
+            {`Create your task for this ${timeFilter?.valueOf() ?? 'month'} to start tracking your progress and unlock insights here.`}
           </p>
         </div>
       </CardContent>
