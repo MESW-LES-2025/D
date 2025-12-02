@@ -19,7 +19,7 @@ CREATE TABLE "task_logs" (
 	"timestamp" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "tasks" RENAME COLUMN "name" TO "title";--> statement-breakpoint
+ALTER TABLE "tasks" RENAME COLUMN "name" TO "tittle";--> statement-breakpoint
 ALTER TABLE "tasks" RENAME COLUMN "user_id" TO "creator_id";--> statement-breakpoint
 ALTER TABLE "tasks" RENAME COLUMN "group_id" TO "organization_id";--> statement-breakpoint
 ALTER TABLE "tasks" DROP CONSTRAINT "tasks_user_id_user_id_fk";

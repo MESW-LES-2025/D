@@ -1,5 +1,4 @@
 'use client';
-
 import type { Transition } from 'framer-motion';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { motion } from 'framer-motion';
@@ -11,7 +10,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-
 // Define types based on components
 type TooltipContentProps = React.ComponentProps<typeof TooltipContent>;
 // Avatar Container for motion-based interactions
@@ -26,6 +24,7 @@ type AvatarMotionProps = {
 function AvatarMotionContainer({
   children,
   zIndex,
+  translate,
   transition,
   tooltipContent,
   tooltipProps,
@@ -37,6 +36,9 @@ function AvatarMotionContainer({
           data-slot="avatar-container"
           className="relative"
           style={{ zIndex }}
+          whileHover={{
+            y: translate,
+          }}
           transition={transition}
         >
           {children}
@@ -94,7 +96,7 @@ function AvatarStackItem({ children, index, size, className }: AvatarStackItemPr
     <div
       className={cn(
         'size-full shrink-0 overflow-hidden rounded-full',
-        '**:data-[slot="avatar"]:size-full',
+        '[&_[data-slot="avatar"]]:size-full',
         className,
       )}
       style={{
@@ -145,7 +147,7 @@ function AvatarGroup({
         ref={ref}
         className={cn(
           '-space-x-1 flex items-center',
-          animate && 'hover:space-x-0 *:transition-all',
+          animate && 'hover:space-x-0 [&>*]:transition-all',
           className,
         )}
         {...props}

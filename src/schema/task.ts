@@ -7,10 +7,11 @@ export const taskPriorityEnum = pgEnum('task_priority', ['low', 'medium', 'high'
 export const taskStatusEnum = pgEnum('task_status', ['backlog', 'todo', 'in_progress', 'review', 'done', 'archived', 'canceled']);
 export const taskDifficultyEnum = pgEnum('task_difficulty', ['easy', 'medium', 'hard']);
 export const taskLogActionEnum = pgEnum('task_log_action', ['created', 'updated', 'deleted', 'status_changed', 'priority_changed', 'difficulty_changed', 'assigned', 'unassigned', 'label_added', 'label_removed', 'comment_added']);
+export const taskLabelColorEnum = pgEnum('task_label_color', ['gray', 'blue', 'green', 'yellow', 'orange', 'red', 'pink', 'purple']);
 
 export const taskTable = pgTable('tasks', {
   id: uuid('id').defaultRandom().primaryKey(),
-  title: text('title').notNull(),
+  tittle: text('tittle').notNull(),
   description: text('description'),
   status: taskStatusEnum('status').default('backlog').notNull(),
   creatorId: text('creator_id').references(() => userTable.id, { onDelete: 'set null' }),
@@ -19,7 +20,13 @@ export const taskTable = pgTable('tasks', {
   difficulty: taskDifficultyEnum('difficulty').default('medium').notNull(),
   dueDate: timestamp('due_date', { mode: 'date' }),
   score: integer('score').default(0).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const taskLabelsTable = pgTable('task_labels', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull(),
+  color: taskLabelColorEnum('color').default('gray').notNull(),
+  organizationId: text('organization_id').references(() => organizationTable.id, { onDelete: 'cascade' }).notNull(),
 });
 
 export const taskAssigneesTable = pgTable('task_assignees', {
