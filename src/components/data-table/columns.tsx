@@ -221,6 +221,19 @@ export const columns: ColumnDef<Task>[] = [
         </AvatarGroup>
       );
     },
+    filterFn: (row, _id, value) => {
+      if (!value) {
+        return true;
+      }
+
+      const assignees = row.getValue('assignees') as Array<{ id: string; name: string; email: string; isCurrentUser: boolean; image?: string | null }> | undefined;
+
+      if (!assignees || assignees.length === 0) {
+        return false;
+      }
+
+      return assignees.some(a => a.isCurrentUser);
+    },
     enableSorting: false,
   },
   {
