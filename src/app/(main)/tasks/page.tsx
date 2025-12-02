@@ -60,7 +60,10 @@ export default async function TaskPage() {
   // Transform tasks to include assignees array
   const tasks: TaskWithAssignees[] = tasksData.map(task => ({
     ...task,
-    assignees: (assigneesByTask.get(task.id) || []).map(a => a.user),
+    assignees: (assigneesByTask.get(task.id) || []).map(a => ({
+      ...a.user,
+      isCurrentUser: a.user.id === session.session?.userId,
+    })),
   }));
 
   return (
