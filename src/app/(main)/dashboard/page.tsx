@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 
 import { InviteOrgDialog } from '@/components/dialogs/invite-org-dialog';
 import { NoOrganization } from '@/components/empty/no-organization';
+import TeamGoals from '@/components/goals/TeamGoals';
 import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/auth/auth';
 
@@ -32,6 +33,10 @@ export default async function Home() {
         <InviteOrgDialog>
           <Button variant="outline">Invite Member</Button>
         </InviteOrgDialog>
+      </div>
+
+      <div className="mt-12">
+        <TeamGoals />
       </div>
     </div>
   );
