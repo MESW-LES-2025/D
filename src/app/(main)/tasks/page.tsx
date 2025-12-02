@@ -5,8 +5,8 @@ import { IconLayoutKanban, IconList } from '@tabler/icons-react';
 import { eq, inArray } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { columns } from '@/components/data-table/columns';
-import { DataTable } from '@/components/data-table/data-table';
+import { columns } from '@/components/tasks/table/columns';
+import { DataTable } from '@/components/tasks/table/data-table';
 import {
   Tabs,
   TabsContent,

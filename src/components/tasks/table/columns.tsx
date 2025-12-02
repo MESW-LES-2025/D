@@ -3,8 +3,8 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
 import type { DifficultyOption, PriorityOption, StatusOption, Task } from '@/lib/task/task-types';
-import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
-import { DataTableRowActions } from '@/components/data-table/data-table-row-actions';
+import { DataTableColumnHeader } from '@/components/tasks/table/data-table-column-header';
+import { DataTableRowActions } from '@/components/tasks/table/data-table-row-actions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AvatarGroup, AvatarGroupTooltip } from '@/components/ui/avatar-group';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -123,10 +123,11 @@ export const columns: ColumnDef<Task>[] = [
       }
 
       return (
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
+          {difficulty.icon && (
+            <difficulty.icon className="size-4 text-muted-foreground" />
+          )}
           <span>{difficulty.label}</span>
-          <span className="ml-1 text-xs text-muted-foreground">
-          </span>
         </div>
       );
     },
@@ -150,7 +151,7 @@ export const columns: ColumnDef<Task>[] = [
         <AvatarGroup variant="motion" className="-space-x-3">
           {assignees.map((assignee) => {
             return (
-              <Avatar key={assignee.id} className="border-3 border-background">
+              <Avatar key={assignee.id} className="border-3 border-transparent">
                 {assignee.image && (
                   <AvatarImage src={assignee.image} alt={assignee.name} />
                 )}

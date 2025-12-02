@@ -4,8 +4,8 @@ import type { Table } from '@tanstack/react-table';
 
 import { IconCirclePlus, IconUserCheck, IconX } from '@tabler/icons-react';
 import { useState } from 'react';
-import { DataTableFacetedFilter } from '@/components/data-table/data-table-faceted-filter';
-import { DataTableViewOptions } from '@/components/data-table/data-table-view-options';
+import { DataTableFacetedFilter } from '@/components/tasks/table/data-table-faceted-filter';
+import { DataTableViewOptions } from '@/components/tasks/table/data-table-view-options';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
