@@ -1,31 +1,24 @@
-name: Deploy Preview
-on:
-  pull_request:
-    branches: [staging, main]
+name: Deploy Staging
 
-permissions:
-  contents: read
-  pull-requests: write
-  deployments: write
+on:
+  push:
+    branches: [staging]
 
 jobs:
   deploy:
-    name: Deploy to Vercel - Preview
+    name: Deploy to Staging
     runs-on: ubuntu-latest
     timeout-minutes: 10
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get branch name
-        id: branch_name
-        uses: tj-actions/branch-names@v8
-
-      - name: Create Neon Branch
-        id: create_neon_branch
+      - name: Create Neon Staging Branch
+        id: neon_staging
         uses: neondatabase/create-branch-action@v5
         with:
           project_id: ${{ vars.NEON_PROJECT_ID }}
-          branch_name: preview/pr-${{ github.event.number }}-${{ steps.branch_name.outputs.current_branch }}
+          branch_name: staging
           api_key: ${{ secrets.NEON_API_KEY }}
 
       - name: Set up Node.js
@@ -51,7 +44,8 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
-          DATABASE_URL: ${{ steps.create_neon_branch.outputs.db_url_with_pooler }}
+          DATABASE_URL: ${{ steps.neon_staging.outputs.db_url_with_pooler }}
+          NPM_CLIENT: npm
           SKIP_ENV_VALIDATION: true
           CI: true
 
@@ -60,24 +54,17 @@ jobs:
         run: |
           url=$(vercel deploy --prebuilt \
             --target=preview \
-            --name=preview-pr-${{ github.event.number }}-${{ steps.branch_name.outputs.current_branch }} \
+            --name=staging \
             --token=${{ secrets.VERCEL_TOKEN }} \
-            --env DATABASE_URL="${{ steps.create_neon_branch.outputs.db_url_with_pooler }}")
+            --env DATABASE_URL="${{ steps.neon_staging.outputs.db_url_with_pooler }}")
+
+          vercel alias set $url staging.task-up.vercel.app \
+            --token=${{ secrets.VERCEL_TOKEN }} || true
+
           echo "url=$url" >> $GITHUB_OUTPUT
-          echo "### 🚀 Preview Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 Staging Deployment" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Preview URL: $url" >> $GITHUB_STEP_SUMMARY
+          echo "Staging URL: https://staging.task-up.vercel.app" >> $GITHUB_STEP_SUMMARY
         env:
           VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
-
-      - name: Comment PR with Preview URL
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## 🚀 Preview Deployment Ready!\n\n**Preview URL:** ${{ steps.deploy.outputs.url }}\n**Database Branch:** preview/pr-${{ github.event.number }}-${{ steps.branch_name.outputs.current_branch }}\n\n✅ Your changes are deployed and ready for review.`
-            })
