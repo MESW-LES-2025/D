@@ -39,7 +39,7 @@ export async function createTask(data: z.infer<typeof TaskValidation>) {
     const [created] = await db
       .insert(taskTable)
       .values({
-        tittle: parse.data.name,
+        title: parse.data.name,
         description: parse.data.description || null,
         priority: parse.data.priority,
         difficulty: parse.data.difficulty,
