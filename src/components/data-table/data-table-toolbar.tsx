@@ -9,8 +9,8 @@ import { DataTableViewOptions } from '@/components/data-table/data-table-view-op
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { difficulties, priorities, statuses } from '@/lib/task/task-options';
 import { cn } from '@/lib/utils';
-import { difficulties, priorities, statuses } from './columns';
 
 type DataTableToolbarProps<TData> = {
   table: Table<TData>;
@@ -27,9 +27,9 @@ export function DataTableToolbar<TData>({
       <div className="flex flex-1 items-center gap-2">
         <Input
           placeholder="Filter tasks..."
-          value={(table.getColumn('tittle')?.getFilterValue() as string) ?? ''}
+          value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
           onChange={event =>
-            table.getColumn('tittle')?.setFilterValue(event.target.value)}
+            table.getColumn('title')?.setFilterValue(event.target.value)}
           className="h-8 w-[150px] lg:w-[250px]"
         />
         {table.getColumn('status') && (
