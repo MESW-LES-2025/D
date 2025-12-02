@@ -1,8 +1,9 @@
 import {
-  Award,
-  Medal,
-  Trophy,
-} from 'lucide-react';
+  IconAward,
+  IconMedal,
+  IconTrophy,
+} from '@tabler/icons-react';
+
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -22,11 +23,11 @@ type UserStats = {
 const getRankIcon = (rank: number) => {
   switch (rank) {
     case 1:
-      return <Trophy className="h-5 w-5 text-yellow-500" />;
+      return <IconTrophy className="h-5 w-5 text-yellow-500" />;
     case 2:
-      return <Medal className="h-5 w-5 text-gray-400" />;
+      return <IconMedal className="h-5 w-5 text-gray-400" />;
     case 3:
-      return <Award className="h-5 w-5 text-orange-600" />;
+      return <IconAward className="h-5 w-5 text-orange-600" />;
     default:
       return (
         <span className="text-gray-500">

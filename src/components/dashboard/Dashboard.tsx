@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, CalendarDays } from 'lucide-react';
+import { IconCalendarMonth, IconCalendarWeek } from '@tabler/icons-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -45,6 +45,26 @@ type UserStats = {
   taskCount: number;
 };
 
+type TimeFilterProps = {
+  timeFilter: 'week' | 'month';
+  setTimeFilter: (value: 'week' | 'month') => void;
+};
+
+function TimeFilter({ timeFilter, setTimeFilter }: TimeFilterProps) {
+  return (
+    <ViewToggle
+      value={timeFilter}
+      onValueChange={next => setTimeFilter(next as typeof timeFilter)}
+      options={[
+        { value: 'week', label: 'Week', icon: <IconCalendarWeek className="size-5" /> },
+        { value: 'month', label: 'Month', icon: <IconCalendarMonth className="size-5" /> },
+      ]}
+      aria-label="Time filter"
+      className="w-fit"
+    />
+  );
+}
+
 export function Dashboard({
   monthlyDoneTasks,
   usersWithTasks,
@@ -82,16 +102,7 @@ export function Dashboard({
   if (tasksFiltered.length === 0 && currentUserTasksFiltered.length === 0) {
     return (
       <>
-        <ViewToggle
-          value={timeFilter}
-          onValueChange={next => setTimeFilter(next as typeof timeFilter)}
-          options={[
-            { value: 'week', label: 'Week', icon: <Calendar /> },
-            { value: 'month', label: 'Month', icon: <CalendarDays /> },
-          ]}
-          aria-label="Time filter"
-          className="w-fit"
-        />
+        <TimeFilter timeFilter={timeFilter} setTimeFilter={setTimeFilter} />
         <EmptyCard timeFilter={timeFilter} />
       </>
     );
@@ -129,15 +140,7 @@ export function Dashboard({
 
   return (
     <>
-      <ViewToggle
-        value={timeFilter}
-        onValueChange={next => setTimeFilter(next as typeof timeFilter)}
-        options={[
-          { value: 'week', label: 'Week', icon: <Calendar className="size-5" /> },
-          { value: 'month', label: 'Month', icon: <CalendarDays className="size-5" /> },
-        ]}
-        aria-label="Time filter"
-      />
+      <TimeFilter timeFilter={timeFilter} setTimeFilter={setTimeFilter} />
 
       {/* Top Stats Row */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

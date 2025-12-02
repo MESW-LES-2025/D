@@ -11,8 +11,6 @@
   "typescript.preferences.autoImportSpecifierExcludeRegexes": [
     // useRouter should be imported from `next/navigation` instead of `next/router`
     "next/router",
-    // give priority for Link to next/link instead of lucide-react
-    "lucide-react",
     // Not used in the project and conflicts with `use()` from React
     "chai",
     // Use Zod v4 instead of v3

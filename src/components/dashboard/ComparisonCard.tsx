@@ -1,4 +1,4 @@
-import { TrendingDown, TrendingUp } from 'lucide-react';
+import { IconTrendingUp } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 
@@ -26,7 +26,7 @@ function warning(currentUserAboveTemAverage: boolean, currentUserPoints: number,
     return (
       <div className="rounded-lg border border-green-500/20 bg-green-500/10 p-4">
         <div className="flex items-start gap-2">
-          <TrendingUp className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-500" />
+          <IconTrendingUp className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-500" />
           <div>
             <p className="mb-1">Outstanding Performance!</p>
             <p className="text-sm text-green-400">
@@ -44,7 +44,7 @@ function warning(currentUserAboveTemAverage: boolean, currentUserPoints: number,
   return (
     <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4">
       <div className="flex items-start gap-2">
-        <TrendingDown className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-500" />
+        <IconTrendingUp className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-500" />
         <div>
           <p className="mb-1">Keep Going — You’ve Got This!</p>
           <p className="text-sm text-red-400">
