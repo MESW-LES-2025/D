@@ -13,6 +13,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Create Neon Staging Branch
+        id: neon_staging
+        uses: neondatabase/create-branch-action@v5
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch_name: staging
+          api_key: ${{ secrets.NEON_API_KEY }}
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -36,17 +44,27 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+          DATABASE_URL: ${{ steps.neon_staging.outputs.db_url_with_pooler }}
           NPM_CLIENT: npm
+          SKIP_ENV_VALIDATION: true
+          CI: true
 
       - name: Deploy to Vercel
         id: deploy
         run: |
-          url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
-          vercel alias set $url staging --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ vars.VERCEL_ORG_ID }} || true
+          url=$(vercel deploy --prebuilt \
+            --target=preview \
+            --name=staging \
+            --token=${{ secrets.VERCEL_TOKEN }} \
+            --env DATABASE_URL="${{ steps.neon_staging.outputs.db_url_with_pooler }}")
+
+          vercel alias set $url staging.task-up.vercel.app \
+            --token=${{ secrets.VERCEL_TOKEN }} || true
+
           echo "url=$url" >> $GITHUB_OUTPUT
           echo "### 🚀 Staging Deployment" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Staging URL: $url" >> $GITHUB_STEP_SUMMARY
+          echo "Staging URL: https://staging.task-up.vercel.app" >> $GITHUB_STEP_SUMMARY
         env:
           VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
