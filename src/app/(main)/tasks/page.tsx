@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
-import { IconLayoutKanban, IconList } from '@tabler/icons-react';
 
+import type { TaskWithAssignees } from '@/lib/task/task-types';
+import { IconLayoutKanban, IconList } from '@tabler/icons-react';
 import { eq, inArray } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -57,7 +58,7 @@ export default async function TaskPage() {
   }
 
   // Transform tasks to include assignees array
-  const tasks = tasksData.map(task => ({
+  const tasks: TaskWithAssignees[] = tasksData.map(task => ({
     ...task,
     assignees: (assigneesByTask.get(task.id) || []).map(a => ({
       ...a.user,

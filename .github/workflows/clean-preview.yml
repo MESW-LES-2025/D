@@ -1,4 +1,5 @@
 name: Cleanup Preview
+
 on:
   pull_request:
     types: [closed]
@@ -12,6 +13,7 @@ jobs:
     name: Cleanup Preview Resources
     runs-on: ubuntu-latest
     timeout-minutes: 5
+
     steps:
       - name: Get branch name
         id: branch_name
@@ -29,13 +31,31 @@ jobs:
 
       - name: Delete Vercel Preview Deployments
         run: |
-          # List and delete all preview deployments for this PR
-          vercel ls --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ vars.VERCEL_ORG_ID }} | \
-            grep -oP 'https://[^\s]+' | \
-            while read url; do
-              vercel rm "$url" --token=${{ secrets.VERCEL_TOKEN }} --yes || true
-            done
-          echo "✅ Deleted Vercel preview deployments"
-        env:
-          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+          PR_NAME="preview-pr-${{ github.event.number }}"
+
+          echo "🔍 Searching for deployments matching: $PR_NAME"
+
+          # List deployments from the project
+          deployments=$(vercel list \
+            --token=$VERCEL_TOKEN \
+            --project=$VERCEL_PROJECT_ID \
+            --scope=$VERCEL_ORG_ID \
+            --confirm \
+            --json | jq -r ".[].uid + \" \" + .[].name" 2>/dev/null)
+
+          if [ -z "$deployments" ]; then
+            echo "No deployments found."
+            exit 0
+          fi
+
+          while read -r line; do
+            uid=$(echo "$line" | awk '{print $1}')
+            name=$(echo "$line" | awk '{print $2}')
+
+            if [[ "$name" == "$PR_NAME" ]]; then
+              echo "🗑 Removing deployment $uid ($name)"
+              vercel remove $uid --yes --token=$VERCEL_TOKEN --scope=$VERCEL_ORG_ID || true
+            fi
+          done <<< "$deployments"
+
+          echo "✅ Finished cleaning Vercel preview deployments for PR #${{ github.event.number }}"
