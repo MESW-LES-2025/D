@@ -20,8 +20,8 @@ import {
 } from '@tanstack/react-table';
 
 import * as React from 'react';
-import { DataTablePagination } from '@/components/data-table/data-table-pagination';
-import { DataTableToolbar } from '@/components/data-table/data-table-toolbar';
+import { DataTablePagination } from '@/components/tasks/table/data-table-pagination';
+import { DataTableToolbar } from '@/components/tasks/table/data-table-toolbar';
 import { TaskSheet } from '@/components/tasks/task-sheet';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
@@ -43,6 +43,19 @@ export function DataTable<TData, TValue>({
     [],
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
+
+  // Sync selectedRow with fresh data when data changes
+  React.useEffect(() => {
+    if (selectedRow && sheetOpen) {
+      const updatedRow = data.find(
+        row => (row as TaskWithAssignees).id === (selectedRow as unknown as TaskWithAssignees).id,
+      );
+      if (updatedRow) {
+        setSelectedRow(updatedRow);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, sheetOpen]);
 
   const table = useReactTable({
     data,

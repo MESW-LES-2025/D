@@ -1,6 +1,6 @@
 import type { Icon } from '@tabler/icons-react';
 import type { DifficultyOption, PriorityOption, StatusOption } from '@/lib/task/task-types';
-import { IconArchive, IconArrowDown, IconArrowRight, IconArrowUp, IconBolt, IconCancel, IconCheckbox, IconCircle, IconCircleDashed, IconEyeCheck, IconHourglassEmpty } from '@tabler/icons-react';
+import { IconArchive, IconArrowDown, IconArrowRight, IconArrowUp, IconBolt, IconCancel, IconCheckbox, IconCircle, IconCircleDashed, IconEyeCheck, IconHexagon, IconHourglassEmpty, IconSquare, IconTriangle } from '@tabler/icons-react';
 import { taskDifficultyEnum, taskPriorityEnum, taskStatusEnum } from '@/schema';
 
 const statusValues = taskStatusEnum.enumValues;
@@ -27,15 +27,14 @@ function buildOptions<T extends string, O extends { label: string; icon?: Icon }
 }
 
 const statusConfig: Record<StatusValue, { label: string; icon: Icon }> = {
-  backlog: { label: 'Backlog', icon: IconCircleDashed },
-  todo: { label: 'Todo', icon: IconCircle },
+  backlog: { label: 'Pending', icon: IconCircleDashed },
+  todo: { label: 'To do', icon: IconCircle },
   in_progress: { label: 'In Progress', icon: IconHourglassEmpty },
   review: { label: 'Review', icon: IconEyeCheck },
   done: { label: 'Done', icon: IconCheckbox },
   archived: { label: 'Archived', icon: IconArchive },
   canceled: { label: 'Canceled', icon: IconCancel },
 };
-
 export const statuses: StatusOption[] = buildOptions(statusValues, statusConfig, IconCircle);
 
 const priorityConfig: Record<PriorityValue, { label: string; icon: Icon }> = {
@@ -44,16 +43,11 @@ const priorityConfig: Record<PriorityValue, { label: string; icon: Icon }> = {
   high: { label: 'High', icon: IconArrowUp },
   urgent: { label: 'Urgent', icon: IconBolt },
 };
-
 export const priorities: PriorityOption[] = buildOptions(priorityValues, priorityConfig, IconArrowRight);
 
-const difficultyConfig: Record<DifficultyValue, { label: string }> = {
-  easy: { label: 'Easy' },
-  medium: { label: 'Medium' },
-  hard: { label: 'Hard' },
+const difficultyConfig: Record<DifficultyValue, { label: string; icon: Icon }> = {
+  easy: { label: 'Easy', icon: IconTriangle },
+  medium: { label: 'Medium', icon: IconSquare },
+  hard: { label: 'Hard', icon: IconHexagon },
 };
-
-export const difficulties: DifficultyOption[] = (difficultyValues as readonly DifficultyValue[]).map(value => ({
-  value,
-  label: difficultyConfig[value]?.label ?? (value as unknown as string),
-}));
+export const difficulties: DifficultyOption[] = buildOptions(difficultyValues, difficultyConfig, IconCircle);
