@@ -13,11 +13,11 @@ describe('pointCalculator', () => {
     });
 
     it('should return half points if completed after due date', () => {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
+      const today = new Date();
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      const result = calculatePointsWithTimingBonus(baseScore, tomorrow, yesterday);
+      // due date is yesterday, completing today = 1 day late
+      const result = calculatePointsWithTimingBonus(baseScore, yesterday, today);
 
       expect(result).toBe(10); // 20 * 0.5
     });
@@ -81,10 +81,10 @@ describe('pointCalculator', () => {
 
       // Hard task (30 pts)
       const hardResult = calculatePointsWithTimingBonus(30, due, new Date());
-      // 30 * (1 + log2(3)) = 30 * 2.584... ≈ 77
+      // 30 * (1 + log2(3)) = 30 * 2.584... ≈ 78
 
       expect(easyResult).toBe(26);
-      expect(hardResult).toBe(77);
+      expect(hardResult).toBe(78);
     });
   });
 
@@ -99,11 +99,11 @@ describe('pointCalculator', () => {
     });
 
     it('should explain late completion scenario', () => {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
+      const today = new Date();
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      const explanation = getPointsExplanation(baseScore, tomorrow, yesterday);
+      // due date is yesterday, completing today = 1 day late
+      const explanation = getPointsExplanation(baseScore, yesterday, today);
 
       expect(explanation).toContain('late');
       expect(explanation).toContain('10');
@@ -114,7 +114,7 @@ describe('pointCalculator', () => {
       dueDate.setDate(dueDate.getDate() + 7);
       const explanation = getPointsExplanation(baseScore, dueDate, new Date());
 
-      expect(explanation).toContain('days remaining');
+      expect(explanation).toContain('days before due date');
       expect(explanation).toContain('multiplier');
     });
   });
