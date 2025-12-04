@@ -9,7 +9,7 @@ type EmptyCardProps = {
 
 export function EmptyCard({ timeFilter = null }: EmptyCardProps) {
   return (
-    <Card className="border-muted-foreground/40 bg-muted/5">
+    <Card>
       <CardContent className="flex items-center gap-4 p-6">
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
           <IconClipboardList className="h-6 w-6" />

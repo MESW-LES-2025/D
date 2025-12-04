@@ -95,7 +95,7 @@ export function NameUpdateCard({ className, ...props }: NameUpdateCardProps) {
   }
 
   return (
-    <Card className={cn('bg-card w-full py-4', className)} {...props}>
+    <Card className={cn('w-full py-4', className)} {...props}>
       <CardHeader className="gap-0 pb-4">
         <CardTitle className="text-lg font-semibold">Name</CardTitle>
         <CardDescription className="text-sm">

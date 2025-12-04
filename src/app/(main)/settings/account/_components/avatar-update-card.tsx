@@ -156,7 +156,7 @@ export function AvatarUpdateCard({
   const userInitials = getInitials(user.name);
 
   return (
-    <Card className={cn('bg-card w-full', className)} {...props}>
+    <Card className={cn('w-full', className)} {...props}>
       <CardContent>
         <div className="flex flex-col gap-6 md:flex-row md:items-center">
           {/* Title and Description */}

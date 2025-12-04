@@ -37,7 +37,7 @@ export function NameUpdateCardSkeleton({ className }: CardSkeletonProps) {
 
 export function AvatarUpdateCardSkeleton({ className }: CardSkeletonProps) {
   return (
-    <Card className={cn('bg-card w-full', className)}>
+    <Card className={cn('w-full', className)}>
       <CardContent>
         <div className="flex flex-col gap-6 md:flex-row md:items-center">
           <div className="flex flex-1 flex-col justify-center">
@@ -58,7 +58,7 @@ export function AvatarUpdateCardSkeleton({ className }: CardSkeletonProps) {
 
 export function PasswordUpdateCardSkeleton({ className }: CardSkeletonProps) {
   return (
-    <Card className={cn('bg-card w-full py-4', className)}>
+    <Card className={cn('w-full py-4', className)}>
       <CardHeader className="gap-2 pb-4">
         <Skeleton className="h-6 w-40" />
         <Skeleton className="h-4 w-64" />
@@ -91,7 +91,7 @@ export function PasswordUpdateCardSkeleton({ className }: CardSkeletonProps) {
 
 export function DeleteAccountCardSkeleton({ className }: CardSkeletonProps) {
   return (
-    <Card className={cn('bg-card w-full py-4 border-destructive', className)}>
+    <Card className={cn('w-full py-4 border-destructive', className)}>
       <CardHeader className="gap-2 pb-4">
         <Skeleton className="h-6 w-32" />
         <Skeleton className="h-4 w-64" />
