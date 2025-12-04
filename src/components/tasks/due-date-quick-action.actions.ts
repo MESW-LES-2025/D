@@ -21,6 +21,7 @@ export async function updateTaskDueDate(taskId: string, dueDate: Date) {
       .where(eq(taskTable.id, taskId));
 
     revalidatePath('/tasks');
+    revalidatePath('/api/tasks/stats');
     return { success: true };
   } catch (error) {
     console.error('Failed to update task due date:', error);

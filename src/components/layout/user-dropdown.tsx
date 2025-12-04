@@ -9,6 +9,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { UserTaskProgressIndicator } from '@/components/layout/user-task-progress-indicator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -116,6 +117,9 @@ export function UserDropdown() {
                 </div>
               </div>
             </DropdownMenuLabel>
+            <div className="px-2 py-1.5">
+              <UserTaskProgressIndicator />
+            </div>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
