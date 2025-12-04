@@ -4,7 +4,7 @@ import { organizationTable } from '@/schema/organization';
 import { userTable } from '@/schema/user';
 
 export const taskPriorityEnum = pgEnum('task_priority', ['low', 'medium', 'high', 'urgent']);
-export const taskStatusEnum = pgEnum('task_status', ['backlog', 'todo', 'in_progress', 'review', 'done', 'archived', 'canceled']);
+export const taskStatusEnum = pgEnum('task_status', ['backlog', 'todo', 'in_progress', 'review', 'done', 'archived', 'canceled', 'deleted']);
 export const taskDifficultyEnum = pgEnum('task_difficulty', ['easy', 'medium', 'hard']);
 export const taskLogActionEnum = pgEnum('task_log_action', ['created', 'updated', 'deleted', 'status_changed', 'priority_changed', 'difficulty_changed', 'assigned', 'unassigned', 'label_added', 'label_removed', 'comment_added']);
 
@@ -20,6 +20,7 @@ export const taskTable = pgTable('tasks', {
   dueDate: timestamp('due_date', { mode: 'date' }),
   score: integer('score').default(0).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
 export const taskAssigneesTable = pgTable('task_assignees', {

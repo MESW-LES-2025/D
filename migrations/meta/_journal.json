@@ -78,6 +78,13 @@
       "when": 1764342772899,
       "tag": "0010_rare_skullbuster",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1764867808306,
+      "tag": "0011_loose_ted_forrester",
+      "breakpoints": true
     }
   ]
 }

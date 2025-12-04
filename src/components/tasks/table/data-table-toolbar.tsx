@@ -2,7 +2,7 @@
 
 import type { Table } from '@tanstack/react-table';
 
-import { IconCirclePlus, IconUserCheck, IconX } from '@tabler/icons-react';
+import { IconUserCheck, IconX } from '@tabler/icons-react';
 import { useState } from 'react';
 import { DataTableFacetedFilter } from '@/components/tasks/table/data-table-faceted-filter';
 import { DataTableViewOptions } from '@/components/tasks/table/data-table-view-options';
@@ -84,10 +84,6 @@ export function DataTableToolbar<TData>({
       </div>
       <div className="flex items-center gap-2">
         <DataTableViewOptions table={table} />
-        <Button size="sm">
-          <IconCirclePlus />
-          Add Task
-        </Button>
       </div>
     </div>
   );
