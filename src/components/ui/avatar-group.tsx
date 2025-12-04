@@ -1,10 +1,10 @@
+/* eslint-disable react/no-array-index-key */
 'use client';
 
 import type { Transition } from 'framer-motion';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { motion } from 'framer-motion';
 import * as React from 'react';
-import { Children } from 'react';
 import {
   TooltipContent,
   TooltipProvider,
@@ -12,13 +12,10 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
-// Define types based on components
 type TooltipContentProps = React.ComponentProps<typeof TooltipContent>;
-// Avatar Container for motion-based interactions
 type AvatarMotionProps = {
   children: React.ReactNode;
   zIndex: number;
-  translate: string | number;
   transition: Transition;
   tooltipContent?: React.ReactNode;
   tooltipProps?: Partial<TooltipContentProps>;
@@ -30,14 +27,18 @@ function AvatarMotionContainer({
   tooltipContent,
   tooltipProps,
 }: AvatarMotionProps) {
+  const [isHovered, setIsHovered] = React.useState(false);
+
   return (
     <TooltipPrimitive.Root>
       <TooltipTrigger>
         <motion.div
           data-slot="avatar-container"
           className="relative"
-          style={{ zIndex }}
+          style={{ zIndex: isHovered ? 50 : zIndex }}
           transition={transition}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
         >
           {children}
         </motion.div>
@@ -50,7 +51,7 @@ function AvatarMotionContainer({
     </TooltipPrimitive.Root>
   );
 }
-// Avatar Container for CSS-based interactions
+
 type AvatarCSSProps = {
   children: React.ReactNode;
   zIndex: number;
@@ -63,13 +64,17 @@ function AvatarCSSContainer({
   tooltipContent,
   tooltipProps,
 }: AvatarCSSProps) {
+  const [isHovered, setIsHovered] = React.useState(false);
+
   return (
     <TooltipPrimitive.Root>
       <TooltipTrigger>
         <div
           data-slot="avatar-container"
           className="relative transition-transform duration-300 ease-out hover:-translate-y-2"
-          style={{ zIndex }}
+          style={{ zIndex: isHovered ? 50 : zIndex }}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
         >
           {children}
         </div>
@@ -82,7 +87,7 @@ function AvatarCSSContainer({
     </TooltipPrimitive.Root>
   );
 }
-// Avatar Container for stack variant with mask
+
 type AvatarStackItemProps = {
   children: React.ReactNode;
   index: number;
@@ -114,14 +119,16 @@ function AvatarGroupTooltip(props: AvatarGroupTooltipProps) {
   return <TooltipContent {...props} />;
 }
 type AvatarGroupVariant = 'motion' | 'css' | 'stack';
+
+const defaultTransition = { type: 'spring', stiffness: 300, damping: 17 } as const;
+const defaultTooltipProps = { side: 'top', sideOffset: 24 } as const;
+
 type AvatarGroupProps = Omit<React.ComponentProps<'div'>, 'translate'> & {
   children: React.ReactElement[];
   variant?: AvatarGroupVariant;
   transition?: Transition;
   invertOverlap?: boolean;
-  translate?: string | number;
   tooltipProps?: Partial<TooltipContentProps>;
-  // Stack-specific props
   animate?: boolean;
   size?: number;
 };
@@ -130,15 +137,13 @@ function AvatarGroup({
   children,
   className,
   variant = 'motion',
-  transition = { type: 'spring', stiffness: 300, damping: 17 },
+  transition = defaultTransition,
   invertOverlap = false,
-  translate = '-30%',
-  tooltipProps = { side: 'top', sideOffset: 24 },
+  tooltipProps = defaultTooltipProps,
   animate = false,
   size = 40,
   ...props
 }: AvatarGroupProps) {
-  // Stack variant
   if (variant === 'stack') {
     return (
       <div
@@ -150,13 +155,13 @@ function AvatarGroup({
         )}
         {...props}
       >
-        {Children.map(children, (child, index) => {
+        {children.map((child, index) => {
           if (!child) {
             return null;
           }
           return (
             <AvatarStackItem
-              key={index}
+              key={`avatar-${index}`}
               index={index}
               size={size}
               className={className}
@@ -168,7 +173,6 @@ function AvatarGroup({
       </div>
     );
   }
-  // Motion and CSS variants with tooltips
   return (
     <TooltipProvider delayDuration={0}>
       <div
@@ -183,14 +187,13 @@ function AvatarGroup({
         {...props}
       >
         {children?.map((child, index) => {
-          const zIndex = invertOverlap ? React.Children.count(children) - index : index;
+          const zIndex = invertOverlap ? children.length - index : index;
 
           if (variant === 'motion') {
             return (
               <AvatarMotionContainer
-                key={index}
+                key={`avatar-${index}`}
                 zIndex={zIndex}
-                translate={translate}
                 transition={transition}
                 tooltipProps={tooltipProps}
               >
@@ -201,7 +204,7 @@ function AvatarGroup({
 
           return (
             <AvatarCSSContainer
-              key={index}
+              key={`avatar-${index}`}
               zIndex={zIndex}
               tooltipProps={tooltipProps}
             >
