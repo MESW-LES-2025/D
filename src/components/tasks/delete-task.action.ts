@@ -7,13 +7,9 @@ import { taskTable } from '@/schema';
 
 export async function deleteTask(taskId: string) {
   try {
-    // Soft delete by setting status to 'deleted'
+    // Hard delete - permanently remove the task
     await db
-      .update(taskTable)
-      .set({
-        status: 'deleted',
-        updatedAt: new Date(),
-      })
+      .delete(taskTable)
       .where(eq(taskTable.id, taskId));
 
     revalidatePath('/tasks');

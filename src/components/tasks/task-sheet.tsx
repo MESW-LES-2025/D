@@ -23,7 +23,7 @@ type TaskSheetProps = {
   isAdmin?: boolean;
 };
 
-export function TaskSheet({ children, open, onOpenChangeAction, task, isAdmin = false }: TaskSheetProps) {
+export function TaskSheet({ children, open, onOpenChangeAction, task, isAdmin = true }: TaskSheetProps) {
   const priorityOption = priorities.find(priority => priority.value === task?.priority);
   const difficultyOption = difficulties.find(difficulty => difficulty.value === task?.difficulty);
 

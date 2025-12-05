@@ -107,9 +107,9 @@ export default async function TaskPage() {
         <TabsContent value="table">
           {isAdmin
             ? (
-                <AdminDataTable data={tasks} columns={adminColumns} />
+                <AdminDataTable data={tasks} columns={adminColumns} isAdmin={isAdmin} />
               )
-            : <DataTable data={tasks} columns={columns} />}
+            : <DataTable data={tasks} columns={columns} isAdmin={isAdmin} />}
         </TabsContent>
         <TabsContent value="board">
           <div>Kanban Board coming soon...</div>

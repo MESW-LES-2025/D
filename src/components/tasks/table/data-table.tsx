@@ -28,11 +28,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  isAdmin?: boolean;
 };
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  isAdmin = false,
 }: DataTableProps<TData, TValue>) {
   const [selectedRow, setSelectedRow] = React.useState<TData | null>(null);
   const [sheetOpen, setSheetOpen] = React.useState(false);
@@ -147,7 +149,7 @@ export function DataTable<TData, TValue>({
       <DataTablePagination table={table} />
 
       {/* Sheet opens when a row is clicked */}
-      <TaskSheet open={sheetOpen} onOpenChangeAction={setSheetOpen} task={selectedRow as TaskWithAssignees} />
+      <TaskSheet open={sheetOpen} onOpenChangeAction={setSheetOpen} task={selectedRow as TaskWithAssignees} isAdmin={isAdmin} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import type { Icon } from '@tabler/icons-react';
 import type { DifficultyOption, PriorityOption, StatusOption } from '@/lib/task/task-types';
-import { IconArchive, IconArrowDown, IconArrowRight, IconArrowUp, IconBolt, IconCancel, IconCheckbox, IconCircle, IconCircleDashed, IconEyeCheck, IconHexagon, IconHourglassEmpty, IconSquare, IconTrash, IconTriangle } from '@tabler/icons-react';
+import { IconArchive, IconArrowDown, IconArrowRight, IconArrowUp, IconBolt, IconCancel, IconCheckbox, IconCircle, IconCircleDashed, IconEyeCheck, IconHexagon, IconHourglassEmpty, IconSquare, IconTriangle } from '@tabler/icons-react';
 import { taskDifficultyEnum, taskPriorityEnum, taskStatusEnum } from '@/schema';
 
 const statusValues = taskStatusEnum.enumValues;
@@ -34,13 +34,12 @@ const statusConfig: Record<StatusValue, { label: string; icon: Icon }> = {
   done: { label: 'Done', icon: IconCheckbox },
   canceled: { label: 'Canceled', icon: IconCancel },
   archived: { label: 'Archived', icon: IconArchive },
-  deleted: { label: 'Deleted', icon: IconTrash },
 };
 export const statuses: StatusOption[] = buildOptions(statusValues, statusConfig, IconCircle).filter(
-  s => !['archived', 'deleted'].includes(s.value),
+  s => !['archived'].includes(s.value),
 );
 export const hiddenStatuses: StatusOption[] = buildOptions(statusValues, statusConfig, IconCircle).filter(
-  s => ['archived', 'deleted'].includes(s.value),
+  s => ['archived'].includes(s.value),
 );
 export const allStatuses: StatusOption[] = buildOptions(statusValues, statusConfig, IconCircle);
 
