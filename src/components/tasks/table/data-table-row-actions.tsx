@@ -40,8 +40,6 @@ export function DataTableRowActions<TData>({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
-        <DropdownMenuItem onClick={() => handleAction('Edit')}>Edit</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleAction('Change Status')}>Change Status</DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleAction('Block/Unblock')}>Block/Unblock</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => handleAction('Archive')}>Archive</DropdownMenuItem>

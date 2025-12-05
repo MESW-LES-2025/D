@@ -59,6 +59,8 @@ jobs:
         id: deploy
         run: |
           url=$(vercel deploy --prebuilt \
+            --target=preview \
+            --name=preview-pr-${{ github.event.number }}-${{ steps.branch_name.outputs.current_branch }} \
             --token=${{ secrets.VERCEL_TOKEN }} \
             --env DATABASE_URL="${{ steps.create_neon_branch.outputs.db_url_with_pooler }}")
           echo "url=$url" >> $GITHUB_OUTPUT
