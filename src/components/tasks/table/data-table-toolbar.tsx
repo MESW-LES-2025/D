@@ -6,9 +6,16 @@ import { IconUserCheck, IconX } from '@tabler/icons-react';
 import { useState } from 'react';
 import { DataTableFacetedFilter } from '@/components/tasks/table/data-table-faceted-filter';
 import { DataTableViewOptions } from '@/components/tasks/table/data-table-view-options';
-
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { client as authClient } from '@/lib/auth/auth-client';
 import { difficulties, priorities, statuses } from '@/lib/task/task-options';
 import { cn } from '@/lib/utils';
 
@@ -21,6 +28,27 @@ export function DataTableToolbar<TData>({
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const [assignedToMe, setAssignedToMe] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [loading, startTransition] = useTransition();
+  const { data: activeOrganization } = authClient.useActiveOrganization();
+
+  const handleCreateTask = (values: any) => {
+    startTransition(async () => {
+      const result = await createTask(values, activeOrganization?.id);
+
+      if (result.error) {
+        toast.error(result.error || 'Failed to create task');
+        return;
+      }
+
+      if (result.success) {
+        toast.success('Task created successfully!', {
+          description: `${values.title} has been created`,
+        });
+        setOpen(false);
+      }
+    });
+  };
 
   return (
     <div className="flex items-center justify-between">
@@ -62,7 +90,9 @@ export function DataTableToolbar<TData>({
           )}
           onClick={() => {
             setAssignedToMe(!assignedToMe);
-            table.getColumn('assignees')?.setFilterValue(!assignedToMe ? true : undefined);
+            table
+              .getColumn('assignees')
+              ?.setFilterValue(!assignedToMe ? true : undefined);
           }}
         >
           <IconUserCheck />
@@ -82,6 +112,7 @@ export function DataTableToolbar<TData>({
           </Button>
         )}
       </div>
+
       <div className="flex items-center gap-2">
         <DataTableViewOptions table={table} />
       </div>
