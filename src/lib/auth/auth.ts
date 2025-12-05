@@ -5,11 +5,22 @@ import { organization } from 'better-auth/plugins';
 import { db } from '@/lib/db';
 import * as schema from '@/schema';
 import { AppConfig } from '@/utils/appConfig';
+import { ac, admin, member, owner } from './permissions';
 
 export const auth = betterAuth({
   appName: AppConfig.name,
   plugins: [
-    organization(),
+    organization({
+      ac,
+      roles: {
+        owner,
+        admin,
+        member,
+      },
+      dynamicAccessControl: {
+        enabled: true,
+      },
+    }),
   ],
   database: drizzleAdapter(db, {
     provider: 'pg',
@@ -42,6 +53,7 @@ export const auth = betterAuth({
             data: {
               ...session,
               activeOrganizationId: member?.organizationId || null,
+              role: member?.role || null,
             },
           };
         },

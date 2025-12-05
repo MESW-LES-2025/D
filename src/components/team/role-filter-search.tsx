@@ -30,9 +30,10 @@ type User = {
 type RoleFilterProps = {
   users: OrganizationUser[];
   currentUser: User;
+  hasPermissions: boolean;
 };
 
-export function RoleFilter({ users, currentUser }: RoleFilterProps) {
+export function RoleFilter({ users, currentUser, hasPermissions }: RoleFilterProps) {
   const [selectedRoles, setSelectedRoles] = useState({
     admin: true,
     owner: true,
@@ -65,6 +66,8 @@ export function RoleFilter({ users, currentUser }: RoleFilterProps) {
   const clearSearch = () => {
     setSearchQuery('');
   };
+  // --------------
+  // const curRole = session.session.role;
 
   return (
     <div className="space-y-4">
@@ -204,9 +207,11 @@ export function RoleFilter({ users, currentUser }: RoleFilterProps) {
                 role={user.role}
                 memberId={user.memberId}
               >
-                <Button variant="secondary" size="sm">
-                  Edit
-                </Button>
+                {hasPermissions && (
+                  <Button variant="secondary" size="sm">
+                    Edit
+                  </Button>
+                )}
               </EditMemberDialog>
             </div>
           </div>

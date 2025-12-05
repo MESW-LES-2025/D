@@ -1,10 +1,21 @@
 import { organizationClient } from 'better-auth/client/plugins';
 import { createAuthClient } from 'better-auth/react';
 import { toast } from 'sonner';
+import { ac, admin, member, owner } from './permissions';
 
 export const client = createAuthClient({
   plugins: [
-    organizationClient(),
+    organizationClient({
+      ac,
+      roles: {
+        owner,
+        admin,
+        member,
+      },
+      dynamicAccessControl: {
+        enabled: true,
+      },
+    }),
   ],
   fetchOptions: {
     onError(e) {
@@ -16,6 +27,7 @@ export const client = createAuthClient({
 });
 
 export const {
+  organization,
   signUp,
   signIn,
   signOut,
