@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
-import { IconLayoutKanban, IconList } from '@tabler/icons-react';
 
+import type { TaskWithAssignees } from '@/lib/task/task-types';
+import { IconLayoutKanban, IconList } from '@tabler/icons-react';
 import { eq, inArray } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { columns } from '@/components/data-table/columns';
-import { DataTable } from '@/components/data-table/data-table';
+import { columns } from '@/components/tasks/table/columns';
+import { DataTable } from '@/components/tasks/table/data-table';
 import {
   Tabs,
   TabsContent,
@@ -57,9 +58,12 @@ export default async function TaskPage() {
   }
 
   // Transform tasks to include assignees array
-  const tasks = tasksData.map(task => ({
+  const tasks: TaskWithAssignees[] = tasksData.map(task => ({
     ...task,
-    assignees: (assigneesByTask.get(task.id) || []).map(a => a.user),
+    assignees: (assigneesByTask.get(task.id) || []).map(a => ({
+      ...a.user,
+      isCurrentUser: a.user.id === session.session?.userId,
+    })),
   }));
 
   return (

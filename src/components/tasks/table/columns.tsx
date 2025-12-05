@@ -1,75 +1,15 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import type { InferSelectModel } from 'drizzle-orm';
 
-import type { taskTable } from '@/schema/task';
-import { IconArchive, IconArrowDown, IconArrowRight, IconArrowUp, IconBolt, IconCancel, IconCheckbox, IconCircle, IconCircleDashed, IconEyeCheck, IconHourglassEmpty } from '@tabler/icons-react';
-import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
-import { DataTableRowActions } from '@/components/data-table/data-table-row-actions';
+import type { DifficultyOption, PriorityOption, StatusOption, Task } from '@/lib/task/task-types';
+import { DataTableColumnHeader } from '@/components/tasks/table/data-table-column-header';
+import { DataTableRowActions } from '@/components/tasks/table/data-table-row-actions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AvatarGroup, AvatarGroupTooltip } from '@/components/ui/avatar-group';
 import { Checkbox } from '@/components/ui/checkbox';
+import { difficulties, priorities, statuses } from '@/lib/task/task-options';
 import { getInitials } from '@/lib/utils';
-import { taskDifficultyEnum, taskPriorityEnum, taskStatusEnum } from '@/schema/task';
-
-type Task = InferSelectModel<typeof taskTable>;
-
-const statusValues = taskStatusEnum.enumValues;
-const priorityValues = taskPriorityEnum.enumValues;
-const difficultyValues = taskDifficultyEnum.enumValues;
-
-export const statuses = statusValues.map((value) => {
-  const configs: Record<string, { label: string; icon: typeof IconCircle }> = {
-    backlog: { label: 'Backlog', icon: IconCircleDashed },
-    todo: { label: 'Todo', icon: IconCircle },
-    in_progress: { label: 'In Progress', icon: IconHourglassEmpty },
-    review: { label: 'Review', icon: IconEyeCheck },
-    done: { label: 'Done', icon: IconCheckbox },
-    archived: { label: 'Archived', icon: IconArchive },
-    canceled: { label: 'Canceled', icon: IconCancel },
-  };
-
-  const config = configs[value] || { label: value, icon: IconCircle };
-
-  return {
-    value,
-    label: config.label,
-    icon: config.icon,
-  };
-});
-
-export const priorities = priorityValues.map((value) => {
-  const configs: Record<string, { label: string; icon: typeof IconArrowDown }> = {
-    low: { label: 'Low', icon: IconArrowDown },
-    medium: { label: 'Medium', icon: IconArrowRight },
-    high: { label: 'High', icon: IconArrowUp },
-    urgent: { label: 'Urgent', icon: IconBolt },
-  };
-
-  const config = configs[value] || { label: value, icon: IconArrowRight };
-
-  return {
-    value,
-    label: config.label,
-    icon: config.icon,
-  };
-});
-
-export const difficulties = difficultyValues.map((value) => {
-  const configs: Record<string, { label: string }> = {
-    easy: { label: 'Easy' },
-    medium: { label: 'Medium' },
-    hard: { label: 'Hard' },
-  };
-
-  const config = configs[value] || { label: value };
-
-  return {
-    value,
-    label: config.label,
-  };
-});
 
 export const columns: ColumnDef<Task>[] = [
   {
@@ -91,13 +31,16 @@ export const columns: ColumnDef<Task>[] = [
         onCheckedChange={value => row.toggleSelected(!!value)}
         aria-label="Select row"
         className="translate-y-0.5"
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
       />
     ),
     enableSorting: false,
     enableHiding: false,
   },
   {
-    accessorKey: 'tittle',
+    accessorKey: 'title',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Title" />
     ),
@@ -105,7 +48,7 @@ export const columns: ColumnDef<Task>[] = [
       return (
         <div className="flex gap-2">
           <span className="max-w-[500px] truncate font-medium">
-            {row.getValue('tittle')}
+            {row.getValue('title')}
           </span>
         </div>
       );
@@ -117,7 +60,7 @@ export const columns: ColumnDef<Task>[] = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
-      const status = statuses.find(
+      const status: StatusOption | undefined = statuses.find(
         status => status.value === row.getValue('status'),
       );
 
@@ -144,7 +87,7 @@ export const columns: ColumnDef<Task>[] = [
       <DataTableColumnHeader column={column} title="Priority" />
     ),
     cell: ({ row }) => {
-      const priority = priorities.find(
+      const priority: PriorityOption | undefined = priorities.find(
         priority => priority.value === row.getValue('priority'),
       );
 
@@ -171,7 +114,7 @@ export const columns: ColumnDef<Task>[] = [
       <DataTableColumnHeader column={column} title="Difficulty" />
     ),
     cell: ({ row }) => {
-      const difficulty = difficulties.find(
+      const difficulty: DifficultyOption | undefined = difficulties.find(
         difficulty => difficulty.value === row.getValue('difficulty'),
       );
 
@@ -180,10 +123,11 @@ export const columns: ColumnDef<Task>[] = [
       }
 
       return (
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
+          {difficulty.icon && (
+            <difficulty.icon className="size-4 text-muted-foreground" />
+          )}
           <span>{difficulty.label}</span>
-          <span className="ml-1 text-xs text-muted-foreground">
-          </span>
         </div>
       );
     },
@@ -207,7 +151,7 @@ export const columns: ColumnDef<Task>[] = [
         <AvatarGroup variant="motion" className="-space-x-3">
           {assignees.map((assignee) => {
             return (
-              <Avatar key={assignee.id} className="border-3 border-background">
+              <Avatar key={assignee.id} className="border-3 border-transparent">
                 {assignee.image && (
                   <AvatarImage src={assignee.image} alt={assignee.name} />
                 )}
@@ -220,6 +164,19 @@ export const columns: ColumnDef<Task>[] = [
           })}
         </AvatarGroup>
       );
+    },
+    filterFn: (row, _id, value) => {
+      if (!value) {
+        return true;
+      }
+
+      const assignees = row.getValue('assignees') as Array<{ id: string; name: string; email: string; isCurrentUser: boolean; image?: string | null }> | undefined;
+
+      if (!assignees || assignees.length === 0) {
+        return false;
+      }
+
+      return assignees.some(a => a.isCurrentUser);
     },
     enableSorting: false,
   },

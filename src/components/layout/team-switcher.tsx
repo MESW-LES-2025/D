@@ -107,13 +107,19 @@ export function TeamSwitcher() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <Image
-                  src={activeOrg.logo || ''}
-                  alt={activeOrg.name}
-                  width={32}
-                  height={32}
-                  className="size-full rounded-lg object-cover"
-                />
+                {activeOrg.logo
+                  ? (
+                      <Image
+                        src={activeOrg.logo}
+                        alt={activeOrg.name}
+                        width={32}
+                        height={32}
+                        className="size-full rounded-lg object-cover"
+                      />
+                    )
+                  : (
+                      <IconBuilding className="shrink-0 rounded-lg object-cover" />
+                    )}
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{activeOrg.name}</span>

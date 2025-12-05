@@ -89,3 +89,65 @@ jobs:
         uses: docker://mcr.microsoft.com/playwright:v1.55.1
         with:
           args: npm run test
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-coverage
+          path: coverage
+  # NOTE:
+  # E2E tests are NOT run in GitHub Actions and should be executed locally on your machine.
+  #
+  # Why?
+  # - Performance Constraints: GitHub Actions is too slow to efficiently run demanding tasks like E2E tests.
+  # - Resource Limitations: The volume of GitHub Actions usage required for E2E testing is not feasible for the class organization.
+  #
+  #
+  # e2e:
+  #   strategy:
+  #     matrix:
+  #       node-version: [22.x]
+
+  #   name: Run E2E tests
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
+  #   needs: [build]
+
+  #   services:
+  #     postgres:
+  #       image: postgres:17
+  #       env:
+  #         POSTGRES_PASSWORD: postgres
+  #         POSTGRES_DB: test
+  #       options: >-
+  #         --health-cmd pg_isready
+  #         --health-interval 10s
+  #         --health-timeout 5s
+  #         --health-retries 5
+  #       ports:
+  #         - 5432:5432
+
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Set up Node.js environment
+  #       uses: ./.github/actions/setup-project
+  #       with:
+  #         node-version: ${{ matrix.node-version }}
+  #         restore-nextjs-cache: true
+
+  #     - name: Install Playwright Browsers
+  #       run: npx playwright install --with-deps chromium firefox
+
+  #     - name: Run E2E tests
+  #       run: npm run test:e2e
+  #       env:
+  #         DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+
+  #     - name: Upload test results
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: test-results
+  #         path: test-results/
+  #         retention-days: 7
