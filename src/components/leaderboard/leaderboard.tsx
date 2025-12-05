@@ -49,7 +49,8 @@ export function Leaderboard({ data, currentUserId }: LeaderboardProps) {
                         : 'text-muted-foreground'
                 }`}
               >
-                #{rank}
+                #
+                {rank}
               </span>
             </div>
 
@@ -95,5 +96,3 @@ export function Leaderboard({ data, currentUserId }: LeaderboardProps) {
     </div>
   );
 }
-
-

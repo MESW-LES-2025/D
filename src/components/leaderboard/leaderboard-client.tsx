@@ -1,7 +1,8 @@
 'use client';
 
+import type { LeaderboardEntry } from '@/app/(main)/leaderboard/actions';
 import { useEffect, useState } from 'react';
-import { getLeaderboardData, type LeaderboardEntry } from '@/app/(main)/leaderboard/actions';
+import { getLeaderboardData } from '@/app/(main)/leaderboard/actions';
 import { Leaderboard } from './leaderboard';
 
 type LeaderboardClientProps = {
@@ -43,5 +44,3 @@ export function LeaderboardClient({
     </div>
   );
 }
-
-

@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { fetchLeaderboardByOrganization } from './actions';
 import { LeaderboardClient } from '@/components/leaderboard/leaderboard-client';
 import { auth } from '@/lib/auth/auth';
+import { fetchLeaderboardByOrganization } from './actions';
 
 export const metadata: Metadata = {
   title: 'TaskUp | Leaderboard',
@@ -51,4 +51,3 @@ export default async function LeaderboardPage() {
     </div>
   );
 }
-

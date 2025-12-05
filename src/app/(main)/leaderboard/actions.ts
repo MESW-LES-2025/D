@@ -26,7 +26,6 @@ export async function fetchLeaderboardByOrganization(
         name: userTable.name,
         email: userTable.email,
         image: userTable.image,
-        
         totalPoints: sql<number>`COALESCE(SUM(${taskTable.score}), 0)`.as('total_points'),
       })
       .from(memberTable)
@@ -66,4 +65,3 @@ export async function getLeaderboardData(): Promise<LeaderboardEntry[]> {
 
   return fetchLeaderboardByOrganization(session.session.activeOrganizationId);
 }
-
