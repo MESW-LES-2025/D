@@ -9,7 +9,6 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { UserTaskProgressIndicator } from '@/components/layout/user-task-progress-indicator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -30,7 +29,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { client, signOut } from '@/lib/auth/auth-client';
 import { getInitials } from '@/lib/utils';
 
-export function UserDropdown() {
+export function UserDropdown({ earnedPoints = 0 }: { earnedPoints?: number }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
   const { data: session, isPending } = client.useSession();
@@ -118,7 +117,12 @@ export function UserDropdown() {
               </div>
             </DropdownMenuLabel>
             <div className="px-2 py-1.5">
-              <UserTaskProgressIndicator />
+              <div className="text-xs text-muted-foreground">Total Points</div>
+              <div className="font-semibold text-foreground">
+                {earnedPoints}
+                {' '}
+                points
+              </div>
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>

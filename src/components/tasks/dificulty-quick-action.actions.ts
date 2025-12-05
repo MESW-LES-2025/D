@@ -8,7 +8,14 @@ import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { taskTable } from '@/schema/task';
 
-export async function updateTaskDifficulty(taskId: string, difficulty: Difficulty) {
+type TaskWithStatus = {
+  id: string;
+  status: string;
+  score: number;
+  dueDate?: Date | null;
+};
+
+export async function updateTaskDifficulty(taskId: string, difficulty: Difficulty, task: TaskWithStatus) {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) {
@@ -16,17 +23,6 @@ export async function updateTaskDifficulty(taskId: string, difficulty: Difficult
   }
 
   try {
-    // Get current task to check its status
-    const [task] = await db
-      .select()
-      .from(taskTable)
-      .where(eq(taskTable.id, taskId))
-      .limit(1);
-
-    if (!task) {
-      return { error: 'Task not found' };
-    }
-
     // Only recalculate score if task is not completed
     // If task is done, score represents earned points and should not be changed
     if (task.status === 'done') {
@@ -52,7 +48,6 @@ export async function updateTaskDifficulty(taskId: string, difficulty: Difficult
     }
 
     revalidatePath('/tasks');
-    revalidatePath('/api/tasks/stats');
     return { success: true };
   } catch (error) {
     console.error('Failed to update task difficulty:', error);

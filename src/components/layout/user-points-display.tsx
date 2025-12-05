@@ -1,15 +1,17 @@
 import { and, eq } from 'drizzle-orm';
 import { headers } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { UserPointsClient } from '@/components/layout/user-points-client';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
-import { taskAssigneesTable, taskTable } from '@/schema/task';
 
-export async function GET() {
+import { taskAssigneesTable, taskTable } from '@/schema/task';
+// import { UserPointsClient } from '/user-points-client';
+
+export async function UserPointsDisplay() {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return null;
   }
 
   try {
@@ -35,22 +37,14 @@ export async function GET() {
         ),
       );
 
-    // Calculate statistics
-    const total = tasks.length;
-    const completed = tasks.filter(t => t.status === 'done').length;
-    const totalPoints = tasks.reduce((sum, t) => sum + (t.score || 0), 0);
+    // Calculate earned points
     const earnedPoints = tasks
       .filter(t => t.status === 'done')
-      .reduce((sum, t) => sum + (t.score || 0), 0);
+      .reduce((sum, t) => sum + (t.score ?? 0), 0);
 
-    return NextResponse.json({
-      total,
-      completed,
-      totalPoints,
-      earnedPoints,
-    });
+    return <UserPointsClient earnedPoints={earnedPoints} />;
   } catch (e) {
-    console.error('Failed to fetch task stats:', e);
-    return NextResponse.json({ error: 'Failed to fetch task stats' }, { status: 500 });
+    console.error('Failed to fetch user points:', e);
+    return null;
   }
 }
