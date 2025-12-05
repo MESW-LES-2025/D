@@ -3,8 +3,9 @@
 import type { Table } from '@tanstack/react-table';
 import type { Task } from '@/lib/task/task-types';
 import { IconArchive, IconCirclePlus, IconTrash, IconX } from '@tabler/icons-react';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
+import { TaskForm } from '@/components/forms/create-task-form';
 import { archiveTask } from '@/components/tasks/archive-task.action';
 import { deleteTask } from '@/components/tasks/delete-task.action';
 import { DataTableViewOptions } from '@/components/tasks/table/data-table-view-options';
@@ -19,8 +20,17 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { client as authClient } from '@/lib/auth/auth-client';
 import { difficulties, priorities, allStatuses as statuses } from '@/lib/task/task-options';
+import { createTask } from '../create-task.action';
 import { DataTableFacetedFilter } from './data-table-faceted-filter';
 
 type DataTableToolbarProps<TData> = {
@@ -36,8 +46,30 @@ export function DataTableToolbar<TData>({
 
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isCreating, startTransition] = useTransition();
+
+  const { data: activeOrganization } = authClient.useActiveOrganization();
+
+  const handleCreateTask = (values: any) => {
+    startTransition(async () => {
+      const result = await createTask(values, activeOrganization?.id);
+
+      if (result.error) {
+        toast.error(result.error || 'Failed to create task');
+        return;
+      }
+
+      if (result.success) {
+        toast.success('Task created successfully!', {
+          description: `${values.title} has been created`,
+        });
+        setShowCreateDialog(false);
+      }
+    });
+  };
 
   const handleBulkArchive = async () => {
     setIsArchiving(true);
@@ -142,6 +174,7 @@ export function DataTableToolbar<TData>({
             </Button>
           )}
         </div>
+
         <div className="flex items-center gap-2">
           {/* Bulk Actions - Shows when rows are selected */}
           {selectedCount > 0 && (
@@ -168,10 +201,30 @@ export function DataTableToolbar<TData>({
           )}
 
           <DataTableViewOptions table={table} />
-          <Button size="sm">
-            <IconCirclePlus />
+          <Button
+            size="sm"
+            onClick={() => setShowCreateDialog(true)}
+          >
+            <IconCirclePlus className="size-4" />
             Add Task
           </Button>
+
+          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Create new task</DialogTitle>
+                <DialogDescription>
+                  Enter the details to create a new task
+                </DialogDescription>
+              </DialogHeader>
+
+              <TaskForm
+                loading={isCreating}
+                onSubmit={handleCreateTask}
+                onCancel={() => setShowCreateDialog(false)}
+              />
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
