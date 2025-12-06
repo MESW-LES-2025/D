@@ -55,7 +55,12 @@ export function DataTableToolbar<TData>({
 
   const handleCreateTask = (values: any) => {
     startTransition(async () => {
-      const result = await createTask(values, activeOrganization?.id);
+      if (!activeOrganization?.id) {
+        toast.error('No active organization selected');
+        return;
+      }
+
+      const result = await createTask(values, activeOrganization.id);
 
       if (result.error) {
         toast.error(result.error || 'Failed to create task');
