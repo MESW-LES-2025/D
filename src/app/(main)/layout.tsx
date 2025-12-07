@@ -1,13 +1,13 @@
-import { eq, and } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { AppSidebar } from '@/components/layout/app-sidebar';
-import { auth } from '@/lib/auth/auth';
-import { db } from '@/lib/db';
-import { taskAssigneesTable, taskTable } from '@/schema/task';
 import {
   SidebarInset,
   SidebarProvider,
 } from '@/components/ui/sidebar';
+import { auth } from '@/lib/auth/auth';
+import { db } from '@/lib/db';
+import { taskAssigneesTable, taskTable } from '@/schema/task';
 
 async function getUserPoints() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -39,8 +39,8 @@ async function getUserPoints() {
       );
 
     return tasks
-      .filter(t => t.tasks.status === 'done')
-      .reduce((sum, t) => sum + (t.tasks.score ?? 0), 0);
+      .filter(t => t.status === 'done')
+      .reduce((sum, t) => sum + (t.score ?? 0), 0);
   } catch (e) {
     console.error('Failed to fetch user points:', e);
     return 0;

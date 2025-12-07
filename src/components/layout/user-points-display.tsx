@@ -37,7 +37,7 @@ export async function UserPointsDisplay() {
         ),
       );
 
-    // Calculate earned points
+    // Calculate earned points - filter for completed tasks and sum their scores
     const earnedPoints = tasks
       .filter(t => t.status === 'done')
       .reduce((sum, t) => sum + (t.score ?? 0), 0);

@@ -48,6 +48,7 @@ export async function updateTaskDifficulty(taskId: string, difficulty: Difficult
     }
 
     revalidatePath('/tasks');
+    revalidatePath('/');
     return { success: true };
   } catch (error) {
     console.error('Failed to update task difficulty:', error);

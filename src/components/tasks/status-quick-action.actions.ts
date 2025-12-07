@@ -46,6 +46,7 @@ export async function updateTaskStatus(taskId: string, status: Status) {
     }
 
     revalidatePath('/tasks');
+    revalidatePath('/');
     return { success: true };
   } catch (error) {
     console.error('Failed to update task status:', error);
