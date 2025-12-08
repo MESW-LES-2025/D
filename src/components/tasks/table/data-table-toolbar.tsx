@@ -2,12 +2,12 @@
 
 import type { Table } from '@tanstack/react-table';
 
-import { IconCirclePlus, IconUserCheck, IconX } from '@tabler/icons-react';
+import { IconUserCheck, IconX } from '@tabler/icons-react';
 import { useState } from 'react';
 import { DataTableFacetedFilter } from '@/components/tasks/table/data-table-faceted-filter';
 import { DataTableViewOptions } from '@/components/tasks/table/data-table-view-options';
-
 import { Button } from '@/components/ui/button';
+
 import { Input } from '@/components/ui/input';
 import { difficulties, priorities, statuses } from '@/lib/task/task-options';
 import { cn } from '@/lib/utils';
@@ -62,7 +62,9 @@ export function DataTableToolbar<TData>({
           )}
           onClick={() => {
             setAssignedToMe(!assignedToMe);
-            table.getColumn('assignees')?.setFilterValue(!assignedToMe ? true : undefined);
+            table
+              .getColumn('assignees')
+              ?.setFilterValue(!assignedToMe ? true : undefined);
           }}
         >
           <IconUserCheck />
@@ -82,12 +84,9 @@ export function DataTableToolbar<TData>({
           </Button>
         )}
       </div>
+
       <div className="flex items-center gap-2">
         <DataTableViewOptions table={table} />
-        <Button size="sm">
-          <IconCirclePlus />
-          Add Task
-        </Button>
       </div>
     </div>
   );

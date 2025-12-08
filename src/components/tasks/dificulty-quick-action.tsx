@@ -3,7 +3,7 @@
 import type { Difficulty, DifficultyOption } from '@/lib/task/task-types';
 import { useOptimistic, useTransition } from 'react';
 import { toast } from 'sonner';
-import { updateTaskDifficulty } from '@/components/tasks/dificulty-quick-action.actions';
+import { updateTaskDifficulty } from '@/components/tasks/dificulty-quick-action.action';
 import {
   Select,
   SelectContent,

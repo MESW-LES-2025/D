@@ -32,10 +32,16 @@ const statusConfig: Record<StatusValue, { label: string; icon: Icon }> = {
   in_progress: { label: 'In Progress', icon: IconHourglassEmpty },
   review: { label: 'Review', icon: IconEyeCheck },
   done: { label: 'Done', icon: IconCheckbox },
-  archived: { label: 'Archived', icon: IconArchive },
   canceled: { label: 'Canceled', icon: IconCancel },
+  archived: { label: 'Archived', icon: IconArchive },
 };
-export const statuses: StatusOption[] = buildOptions(statusValues, statusConfig, IconCircle);
+export const statuses: StatusOption[] = buildOptions(statusValues, statusConfig, IconCircle).filter(
+  s => !['archived'].includes(s.value),
+);
+export const hiddenStatuses: StatusOption[] = buildOptions(statusValues, statusConfig, IconCircle).filter(
+  s => ['archived'].includes(s.value),
+);
+export const allStatuses: StatusOption[] = buildOptions(statusValues, statusConfig, IconCircle);
 
 const priorityConfig: Record<PriorityValue, { label: string; icon: Icon }> = {
   low: { label: 'Low', icon: IconArrowDown },
