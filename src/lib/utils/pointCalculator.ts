@@ -19,18 +19,18 @@ export function calculatePointsWithTimingBonus(
   // Validate and convert dates - ensure they are valid Date objects
   let due: Date;
   let completion: Date;
-  
+
   try {
     // Convert to Date if needed and validate
     due = dueDate instanceof Date ? dueDate : new Date(dueDate);
     completion = completionDate instanceof Date ? completionDate : new Date(completionDate);
-    
+
     // Check if dates are valid
-    if (isNaN(due.getTime()) || isNaN(completion.getTime())) {
+    if (Number.isNaN(due.getTime()) || Number.isNaN(completion.getTime())) {
       console.warn('Invalid date detected in calculatePointsWithTimingBonus, returning baseScore');
       return baseScore;
     }
-    
+
     // Normalize dates to start of day for accurate comparison
     completion.setHours(0, 0, 0, 0);
     due.setHours(0, 0, 0, 0);
@@ -44,7 +44,7 @@ export function calculatePointsWithTimingBonus(
   const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
 
   // Validate daysDiff is a valid number
-  if (isNaN(daysDiff)) {
+  if (Number.isNaN(daysDiff)) {
     console.warn('daysDiff is NaN, returning baseScore');
     return baseScore;
   }
@@ -66,7 +66,7 @@ export function calculatePointsWithTimingBonus(
   const bonusPoints = Math.round(baseScore * logMultiplier);
 
   // Final validation - ensure result is a valid number
-  if (isNaN(bonusPoints)) {
+  if (Number.isNaN(bonusPoints)) {
     console.warn('bonusPoints is NaN, returning baseScore');
     return baseScore;
   }
