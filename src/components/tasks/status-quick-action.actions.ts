@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
-import { calculateTaskPoints } from '@/lib/utils/calculateTaskPoints';
+import { calculateTaskPoints, getTaskBaseScore } from '@/lib/utils/calculateTaskPoints';
 import { taskTable } from '@/schema/task';
 
 export async function updateTaskStatus(taskId: string, status: Status) {
@@ -17,37 +17,29 @@ export async function updateTaskStatus(taskId: string, status: Status) {
   }
 
   try {
-    // Fetch the current task if marking as done
-    let score: number | undefined;
-    if (status === 'done') {
-      const [task] = await db
-        .select()
-        .from(taskTable)
-        .where(eq(taskTable.id, taskId))
-        .limit(1);
+    // Fetch the task to calculate score based on difficulty
+    const [task] = await db
+      .select()
+      .from(taskTable)
+      .where(eq(taskTable.id, taskId))
+      .limit(1);
 
-      if (task?.score && task.score > 0) {
-        score = await calculateTaskPoints(task.score, status, task.dueDate);
-        console.error(`[Points Calculation] Task ${taskId}: base=${task.score}, due=${task.dueDate?.toISOString()}, earned=${score}`);
-      }
+    if (!task) {
+      return { error: 'Task not found' };
     }
 
-    // Update task status and score if applicable
-    if (score !== undefined) {
-      await db
-        .update(taskTable)
-        .set({ status, score })
-        .where(eq(taskTable.id, taskId));
-    } else {
-      await db
-        .update(taskTable)
-        .set({ status })
-        .where(eq(taskTable.id, taskId));
-    }
+    const baseScore = await getTaskBaseScore(task.difficulty);
+    const score = await calculateTaskPoints(baseScore, status, task.dueDate);
+
+    // Update task status and score
+    await db
+      .update(taskTable)
+      .set({ status, score })
+      .where(eq(taskTable.id, taskId));
 
     revalidatePath('/tasks');
     revalidatePath('/');
-    return { success: true };
+    return { success: true, score };
   } catch (error) {
     console.error('Failed to update task status:', error);
     return { error: 'Failed to update task status' };

@@ -16,3 +16,13 @@ export async function calculateTaskPoints(
   // If not done, return base score
   return baseScore;
 }
+
+export async function getTaskBaseScore(difficulty: string): Promise<number> {
+  const scoreMap: Record<string, number> = {
+    easy: 10,
+    medium: 20,
+    hard: 30,
+  };
+
+  return scoreMap[difficulty] || 20; // Default to medium if unknown
+}

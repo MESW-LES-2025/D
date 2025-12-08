@@ -40,7 +40,18 @@ export function StatusQuickAction({ status, taskId }: StatusQuickActionProps) {
         return;
       }
 
-      toast.success('Status updated successfully!');
+      if (newStatus === 'done') {
+        const completionMessages = [
+          'Task complete! Well done!',
+          'Complete! Good job!',
+          'Done! Great work!',
+        ];
+        const randomMessage = completionMessages[Math.floor(Math.random() * completionMessages.length)];
+        const pointsText = result.score ? ` +${result.score} points` : '';
+        toast.success(`${randomMessage}${pointsText}`);
+      } else {
+        toast.success('Status updated successfully!');
+      }
     });
   };
 
