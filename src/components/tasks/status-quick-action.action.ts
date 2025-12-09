@@ -18,7 +18,10 @@ export async function updateTaskStatus(taskId: string, status: Status) {
   try {
     await db
       .update(taskTable)
-      .set({ status })
+      .set({ 
+        status,
+        updatedAt: new Date(),
+      })
       .where(eq(taskTable.id, taskId));
 
     revalidatePath('/tasks');

@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { LeaderboardClient } from '@/components/leaderboard/leaderboard-client';
 import { auth } from '@/lib/auth/auth';
-import { fetchLeaderboardByOrganization } from './actions';
+import { getLeaderboardData } from './actions';
 
 export const metadata: Metadata = {
   title: 'TaskUp | Leaderboard',
@@ -34,8 +34,7 @@ export default async function LeaderboardPage() {
   }
 
   const currentUserId = session.user.id;
-  const organizationId = session.session.activeOrganizationId;
-  const leaderboardData = await fetchLeaderboardByOrganization(organizationId);
+  const leaderboardData = await getLeaderboardData('all');
 
   return (
     <div className="min-h-screen py-12">
