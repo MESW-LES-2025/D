@@ -3,9 +3,7 @@ import { headers } from 'next/headers';
 import { UserPointsClient } from '@/components/layout/user-points-client';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
-
-import { taskAssigneesTable, taskTable } from '@/schema/task';
-// import { UserPointsClient } from '/user-points-client';
+import { userPointsTable } from '@/schema';
 
 export async function UserPointsDisplay() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -18,29 +16,19 @@ export async function UserPointsDisplay() {
     const orgId = session.session?.activeOrganizationId ?? '';
     const userId = session.user.id;
 
-    // Fetch tasks assigned to the current user in the organization
-    const tasks = await db
-      .select({
-        id: taskTable.id,
-        status: taskTable.status,
-        score: taskTable.score,
-      })
-      .from(taskTable)
-      .innerJoin(
-        taskAssigneesTable,
-        eq(taskTable.id, taskAssigneesTable.taskId),
-      )
+    // Fetch user's total points from the user_points table
+    const [userPoints] = await db
+      .select()
+      .from(userPointsTable)
       .where(
         and(
-          eq(taskTable.organizationId, orgId),
-          eq(taskAssigneesTable.userId, userId),
+          eq(userPointsTable.userId, userId),
+          eq(userPointsTable.organizationId, orgId),
         ),
-      );
+      )
+      .limit(1);
 
-    // Calculate earned points - filter for completed tasks and sum their scores
-    const earnedPoints = tasks
-      .filter(t => t.status === 'done')
-      .reduce((sum, t) => sum + (t.score ?? 0), 0);
+    const earnedPoints = userPoints?.totalPoints ?? 0;
 
     return <UserPointsClient earnedPoints={earnedPoints} />;
   } catch (e) {

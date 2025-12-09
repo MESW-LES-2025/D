@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/sidebar';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
-import { taskAssigneesTable, taskTable } from '@/schema/task';
+import { userPointsTable } from '@/schema';
 
 async function getUserPoints() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -20,27 +20,18 @@ async function getUserPoints() {
     const orgId = session.session?.activeOrganizationId ?? '';
     const userId = session.user.id;
 
-    const tasks = await db
-      .select({
-        id: taskTable.id,
-        status: taskTable.status,
-        score: taskTable.score,
-      })
-      .from(taskTable)
-      .innerJoin(
-        taskAssigneesTable,
-        eq(taskTable.id, taskAssigneesTable.taskId),
-      )
+    const [userPoints] = await db
+      .select()
+      .from(userPointsTable)
       .where(
         and(
-          eq(taskTable.organizationId, orgId),
-          eq(taskAssigneesTable.userId, userId),
+          eq(userPointsTable.userId, userId),
+          eq(userPointsTable.organizationId, orgId),
         ),
-      );
+      )
+      .limit(1);
 
-    return tasks
-      .filter(t => t.status === 'done')
-      .reduce((sum, t) => sum + (t.score ?? 0), 0);
+    return userPoints?.totalPoints ?? 0;
   } catch (e) {
     console.error('Failed to fetch user points:', e);
     return 0;

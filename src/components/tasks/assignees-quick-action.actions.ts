@@ -37,7 +37,11 @@ export async function assignUserToTask(taskId: string, userId: string) {
       userId,
     });
 
+    // Note: New assignees added to done tasks get 0 points
+    // They only earn points if assigned when the task was completed
+
     revalidatePath('/tasks');
+    revalidatePath('/');
 
     return { success: true };
   } catch (error) {
