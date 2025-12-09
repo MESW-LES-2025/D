@@ -18,7 +18,7 @@ export async function updateTaskStatus(taskId: string, status: Status) {
   try {
     await db
       .update(taskTable)
-      .set({ 
+      .set({
         status,
         updatedAt: new Date(),
       })

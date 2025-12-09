@@ -52,7 +52,7 @@ export function LeaderboardClient({
           <label htmlFor="time-period" className="text-sm font-medium">
             Filter by:
           </label>
-          <Select value={timePeriod} onValueChange={(value) => setTimePeriod(value as TimePeriod)}>
+          <Select value={timePeriod} onValueChange={value => setTimePeriod(value as TimePeriod)}>
             <SelectTrigger id="time-period" className="w-[140px]">
               <SelectValue placeholder="Select period" />
             </SelectTrigger>

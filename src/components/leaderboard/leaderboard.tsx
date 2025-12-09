@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 type LeaderboardEntry = {
   userId: string;
   name: string;
@@ -56,9 +58,11 @@ export function Leaderboard({ data, currentUserId }: LeaderboardProps) {
 
             {entry.image
               ? (
-                  <img
+                  <Image
                     src={entry.image}
                     alt={entry.name || 'User'}
+                    width={48}
+                    height={48}
                     className="h-12 w-12 rounded-full"
                   />
                 )
