@@ -3,7 +3,7 @@
 import { IconChevronDown } from '@tabler/icons-react';
 import { useOptimistic, useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { updateTaskDueDate } from '@/components/tasks/due-date-quick-action.actions';
+import { updateTaskDueDate } from '@/components/tasks/due-date-quick-action.action';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {

@@ -11,7 +11,7 @@ import { TaskValidation } from '@/validations/TaskValidation';
 
 type CreateTaskInput = z.infer<typeof TaskValidation>;
 
-export async function createTask(input: CreateTaskInput, organizationId?: string) {
+export async function createTask(input: CreateTaskInput, organizationId: string) {
   try {
     // Authenticate user
     const session = await auth.api.getSession({

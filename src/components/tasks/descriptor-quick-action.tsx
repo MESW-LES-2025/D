@@ -3,7 +3,7 @@
 import { IconCheck, IconPencil, IconX } from '@tabler/icons-react';
 import { useOptimistic, useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { updateTaskDescriptor } from '@/components/tasks/descriptor-quick-action.actions';
+import { updateTaskDescriptor } from '@/components/tasks/descriptor-quick-action.action';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SheetDescription, SheetTitle } from '@/components/ui/sheet';

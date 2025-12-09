@@ -21,9 +21,9 @@ import {
 
 import * as React from 'react';
 import { DataTablePagination } from '@/components/tasks/table/data-table-pagination';
-import { DataTableToolbar } from '@/components/tasks/table/data-table-toolbar';
 import { TaskSheet } from '@/components/tasks/task-sheet';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DataTableToolbar } from './data-table-toolbar';
 
 type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
@@ -53,6 +53,7 @@ export function DataTable<TData, TValue>({
         row => (row as TaskWithAssignees).id === (selectedRow as unknown as TaskWithAssignees).id,
       );
       if (updatedRow) {
+        // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
         setSelectedRow(updatedRow);
       }
     }
@@ -89,6 +90,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className="flex flex-col gap-4">
       <DataTableToolbar table={table} />
+
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>

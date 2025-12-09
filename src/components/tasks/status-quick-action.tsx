@@ -3,6 +3,7 @@
 import type { Status, StatusOption } from '@/lib/task/task-types';
 import { useOptimistic, useTransition } from 'react';
 import { toast } from 'sonner';
+import { updateTaskStatus } from '@/components/tasks/status-quick-action.action';
 import {
   Select,
   SelectContent,
@@ -11,15 +12,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { statuses } from '@/lib/task/task-options';
-import { updateTaskStatus } from './status-quick-action.actions';
+import { allStatuses, statuses as statusesWithoutHidden } from '@/lib/task/task-options';
 
 type StatusQuickActionProps = {
   status: StatusOption | undefined;
   taskId: string;
+  showHidden?: boolean;
 };
 
-export function StatusQuickAction({ status, taskId }: StatusQuickActionProps) {
+export function StatusQuickAction({ status, taskId, showHidden = false }: StatusQuickActionProps) {
   const [isPending, startTransition] = useTransition();
   const [optimisticStatus, setOptimisticStatus] = useOptimistic(
     status?.value ?? '',
@@ -54,6 +55,7 @@ export function StatusQuickAction({ status, taskId }: StatusQuickActionProps) {
     });
   };
 
+  const statuses = showHidden ? allStatuses : statusesWithoutHidden;
   const currentStatus = statuses.find(s => s.value === optimisticStatus) ?? status;
 
   return (

@@ -3,7 +3,7 @@
 import type { Priority, PriorityOption } from '@/lib/task/task-types';
 import { useOptimistic, useTransition } from 'react';
 import { toast } from 'sonner';
-import { updateTaskPriority } from '@/components/tasks/priority-quick-action.actions';
+import { updateTaskPriority } from '@/components/tasks/priority-quick-action.action';
 import {
   Select,
   SelectContent,
