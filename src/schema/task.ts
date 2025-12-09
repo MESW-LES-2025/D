@@ -20,6 +20,7 @@ export const taskTable = pgTable('tasks', {
   dueDate: timestamp('due_date', { mode: 'date' }),
   score: integer('score').default(0).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
 export const taskAssigneesTable = pgTable('task_assignees', {
