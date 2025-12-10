@@ -6,7 +6,7 @@ import { calculateDueDateMultiplier } from '@/lib/utils/pointCalculator';
 /**
  * Calculate task points using the formula:
  * points = priority * difficulty * dueDateMultiplier / assigneeCount
- * 
+ *
  * Priority multipliers: low=10, medium=20, high=30, urgent=40
  * Difficulty multipliers: easy=10, medium=20, hard=30
  * Due date multiplier: sigmoid function (0.5 to 2.0)

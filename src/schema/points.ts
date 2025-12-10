@@ -6,9 +6,9 @@ import { userTable } from '@/schema/user';
 
 // Enum for point transaction types
 export const pointTransactionTypeEnum = pgEnum('point_transaction_type', [
-  'task_completed',      // Task marked as done
-  'task_uncompleted',    // Task unmarked from done
-  'task_property_changed', // Priority/difficulty/due date changed on done task
+  'task_completed',
+  'task_uncompleted',
+  'task_property_changed',
 ]);
 
 // User points table - stores total points per user per organization

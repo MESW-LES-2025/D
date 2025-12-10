@@ -1,6 +1,6 @@
 {
-  "id": "7a809243-f180-4c56-ba6f-a941ecdddbc2",
-  "prevId": "a0b8e3c2-5d47-4e2a-9f3c-7b8c4d5e6f7g",
+  "id": "35c922b8-8b44-4bd9-86b3-6e626c4803e8",
+  "prevId": "7a809243-f180-4c56-ba6f-a941ecdddbc2",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1255,7 +1255,7 @@
         "review",
         "done",
         "archived",
-        "canceled"
+        "deleted"
       ]
     }
   },

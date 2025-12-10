@@ -1,6 +1,6 @@
 /**
  * Calculate due date multiplier using sigmoid function for smooth transitions
- * 
+ *
  * Multiplier rules:
  * - Sigmoid function ensures smooth transitions without extreme jumps
  * - Range: 0.5 (very late) to 2.0 (very early)
@@ -8,6 +8,18 @@
  * - Formula: multiplier = 0.5 + 1.5 / (1 + e^(k * daysLate))
  *   where k = 0.3 (steepness parameter)
  *   and daysLate is positive when late, negative when early
+ */
+export function calculatePointsWithTimingBonus(
+  basePoints: number,
+  dueDate: Date | null | undefined,
+  completionDate: Date = new Date(),
+): number {
+  const multiplier = calculateDueDateMultiplier(dueDate, completionDate);
+  return Math.round(basePoints * multiplier);
+}
+
+/**
+ * Calculate due date multiplier using sigmoid function for smooth transitions
  */
 export function calculateDueDateMultiplier(
   dueDate: Date | null | undefined,

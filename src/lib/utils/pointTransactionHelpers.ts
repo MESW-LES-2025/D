@@ -1,8 +1,8 @@
 'use server';
 
+import type { PointTransactionType } from '@/lib/task/task-types';
 import { and, eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import type { PointTransactionType } from '@/lib/task/task-types';
 import {
   pointTransactionsTable,
   taskAssigneesTable,
@@ -54,11 +54,11 @@ async function recordPointTransaction(
 ) {
   // Get current user points
   const userPoints = await getOrCreateUserPoints(userId, organizationId);
-  
+
   if (!userPoints) {
     throw new Error(`Failed to get or create user points for user ${userId}`);
   }
-  
+
   const previousTotal = userPoints.totalPoints;
   const newTotal = previousTotal + pointsChange;
 

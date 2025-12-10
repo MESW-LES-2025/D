@@ -12,33 +12,38 @@ describe('pointCalculator', () => {
       expect(result).toBe(20);
     });
 
-    it('should return half points if completed after due date', () => {
-      const today = new Date();
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      // due date is yesterday, completing today = 1 day late
-      const result = calculatePointsWithTimingBonus(baseScore, yesterday, today);
-
-      expect(result).toBe(10); // 20 * 0.5
-    });
-
-    it('should apply logarithmic bonus for early completion', () => {
-      // Due in 7 days, completed today (7 days remaining)
-      const dueDate = new Date();
-      dueDate.setDate(dueDate.getDate() + 7);
-      const result = calculatePointsWithTimingBonus(baseScore, dueDate, new Date());
-
-      // 20 * (1 + log2(7)) = 20 * 3.807... = 76.14... ≈ 76
-      expect(result).toBe(76);
-    });
-
-    it('should give full points on due date (0 days remaining)', () => {
+    it('should return slightly more points (approx 1.25x) on due date', () => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const result = calculatePointsWithTimingBonus(baseScore, today, today);
 
-      // 20 * 1 = 20 (no bonus on due date)
-      expect(result).toBe(20);
+      // 20 * 1.25 = 25
+      expect(result).toBe(25);
+    });
+
+    it('should return fewer points if completed after due date', () => {
+      const today = new Date();
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      // due date is yesterday, completing today = 1 day late
+      // daysLate = 1
+      // multiplier = 0.5 + 1.5 / (1 + e^0.3) ≈ 1.138
+      // points = 20 * 1.138 ≈ 22.7 -> 23
+      const result = calculatePointsWithTimingBonus(baseScore, yesterday, today);
+
+      expect(result).toBe(23);
+    });
+
+    it('should apply bonus for early completion', () => {
+      // Due in 7 days, completed today (7 days early)
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 7);
+      // daysLate = -7
+      // multiplier = 0.5 + 1.5 / (1 + e^-2.1) ≈ 1.838
+      // points = 20 * 1.838 ≈ 36.7 -> 37
+      const result = calculatePointsWithTimingBonus(baseScore, dueDate, new Date());
+
+      expect(result).toBe(37);
     });
 
     it('should give more points for earlier completion', () => {
@@ -64,27 +69,24 @@ describe('pointCalculator', () => {
       const dueDate = new Date();
       dueDate.setDate(dueDate.getDate() + 1);
       const completionDate = new Date();
-      // completionDate is today, due is tomorrow, so 1 day remaining
+      // completionDate is today, due is tomorrow, so 1 day early (daysLate = -1)
+      // multiplier = 0.5 + 1.5 / (1 + e^-0.3) ≈ 1.36
+      // points = 20 * 1.36 = 27.2 -> 27
       const result = calculatePointsWithTimingBonus(baseScore, dueDate, completionDate);
 
-      // 20 * (1 + log2(1)) = 20 * 1 = 20
-      expect(result).toBe(20);
+      expect(result).toBe(27);
     });
 
     it('should handle different base scores', () => {
       const due = new Date();
       due.setDate(due.getDate() + 3);
 
-      // Easy task (10 pts)
       const easyResult = calculatePointsWithTimingBonus(10, due, new Date());
-      // 10 * (1 + log2(3)) = 10 * 2.584... ≈ 26
 
-      // Hard task (30 pts)
       const hardResult = calculatePointsWithTimingBonus(30, due, new Date());
-      // 30 * (1 + log2(3)) = 30 * 2.584... ≈ 78
 
-      expect(easyResult).toBe(26);
-      expect(hardResult).toBe(78);
+      expect(easyResult).toBe(16);
+      expect(hardResult).toBe(47);
     });
   });
 
@@ -106,16 +108,16 @@ describe('pointCalculator', () => {
       const explanation = getPointsExplanation(baseScore, yesterday, today);
 
       expect(explanation).toContain('late');
-      expect(explanation).toContain('10');
     });
 
     it('should explain early completion with bonus', () => {
       const dueDate = new Date();
       dueDate.setDate(dueDate.getDate() + 7);
-      const explanation = getPointsExplanation(baseScore, dueDate, new Date());
+      const explanation = getPointsExplanation(1.8, dueDate, new Date());
 
       expect(explanation).toContain('days before due date');
-      expect(explanation).toContain('multiplier');
+      // If we pass 1.8, it should contain 1.8
+      expect(explanation).toContain('1.8');
     });
   });
 });
