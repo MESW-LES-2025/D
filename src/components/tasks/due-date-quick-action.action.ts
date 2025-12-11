@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
+import { createDeadlineUpdateNotification } from '@/lib/notification/notification-helpers';
 import { calculateTaskPoints } from '@/lib/utils/calculateTaskPoints';
 import { adjustPointsForPropertyChange } from '@/lib/utils/pointTransactionHelpers';
 import { taskAssigneesTable, taskTable } from '@/schema/task';
@@ -98,9 +99,9 @@ export async function updateTaskDueDate(taskId: string, dueDate: Date) {
         createDeadlineUpdateNotification(
           assignee.userId,
           taskId,
-          currentTask.title,
+          task.title,
           dueDate.toISOString(),
-          currentTask.dueDate?.toISOString(),
+          task.dueDate?.toISOString(),
         ),
       ),
     );
