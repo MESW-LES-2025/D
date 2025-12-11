@@ -88,6 +88,7 @@ export async function updateTaskPriority(taskId: string, priority: Priority) {
     }
 
     revalidatePath('/tasks');
+    revalidatePath('/goals');
     revalidatePath('/');
     return { success: true };
   } catch (error) {

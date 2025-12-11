@@ -93,6 +93,7 @@ export async function updateTaskDifficulty(taskId: string, difficulty: Difficult
     }
 
     revalidatePath('/tasks');
+    revalidatePath('/goals');
     revalidatePath('/');
     return { success: true };
   } catch (error) {

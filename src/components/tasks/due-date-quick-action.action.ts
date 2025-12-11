@@ -87,6 +87,7 @@ export async function updateTaskDueDate(taskId: string, dueDate: Date) {
     }
 
     revalidatePath('/tasks');
+    revalidatePath('/goals');
     revalidatePath('/');
     return { success: true };
   } catch (error) {

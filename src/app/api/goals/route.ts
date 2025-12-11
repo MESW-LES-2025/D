@@ -49,7 +49,7 @@ export async function GET() {
     const tasksByGoal = new Map<string, any[]>();
     for (const a of associations) {
       const arr = tasksByGoal.get(a.goalId) || [];
-      arr.push({ id: a.task.id, name: a.task.tittle });
+      arr.push({ id: a.task.id, name: a.task.title });
       tasksByGoal.set(a.goalId, arr);
     }
 

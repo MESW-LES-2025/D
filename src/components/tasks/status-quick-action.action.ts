@@ -111,6 +111,7 @@ export async function updateTaskStatus(taskId: string, status: Status) {
     }
 
     revalidatePath('/tasks');
+    revalidatePath('/goals');
     revalidatePath('/');
     return { success: true, score };
   } catch (error) {
