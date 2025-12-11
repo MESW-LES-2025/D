@@ -17,9 +17,10 @@ import { difficulties } from '@/lib/task/task-options';
 type DifficultyQuickActionProps = {
   difficulty: DifficultyOption | undefined;
   taskId: string;
+  task: any; // Replace 'any' with proper TaskWithStatus type
 };
 
-export function DifficultyQuickAction({ difficulty, taskId }: DifficultyQuickActionProps) {
+export function DifficultyQuickAction({ difficulty, taskId, task }: DifficultyQuickActionProps) {
   const [isPending, startTransition] = useTransition();
   const [optimisticDifficulty, setOptimisticDifficulty] = useOptimistic(
     difficulty?.value ?? '',
@@ -29,11 +30,11 @@ export function DifficultyQuickAction({ difficulty, taskId }: DifficultyQuickAct
   if (!difficulty) {
     return null;
   }
-
   const handleDifficultyChange = (newDifficulty: Difficulty) => {
     startTransition(async () => {
       setOptimisticDifficulty(newDifficulty);
-      const result = await updateTaskDifficulty(taskId, newDifficulty);
+      const result = await updateTaskDifficulty(taskId, newDifficulty, task);
+      // const result = await updateTaskDifficulty(taskId, newDifficulty);
 
       if (result.error) {
         toast.error(result.error);
