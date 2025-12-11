@@ -28,7 +28,7 @@ export type NotificationHandler<T extends NotificationsType> = (
 export const notificationHandlers: Record<NotificationsType, NotificationHandler<NotificationsType>> = {
   deadline_update: (_notificationId, metadata) => {
     if (metadata && 'taskId' in metadata) {
-      return { type: 'navigate', path: `/tasks/${metadata.taskId}` };
+      return { type: 'navigate', path: `/tasks?taskId=${metadata.taskId}` };
     }
 
     return { type: 'navigate', path: '/tasks' };
