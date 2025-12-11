@@ -1,7 +1,9 @@
 'use client';
 
-import { IconCalendar, IconCircle, IconEdit, IconTrash, IconTrophy } from '@tabler/icons-react';
+import { IconCalendar, IconCheck, IconCircle, IconEdit, IconTrash, IconTrophy } from '@tabler/icons-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
+import { completeGoal } from '@/app/(main)/dashboard/complete-goal-actions';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,6 +31,7 @@ type Goal = {
   description?: string;
   dueDate?: string;
   points?: number;
+  status?: 'active' | 'paused' | 'completed' | 'archived';
   assigneeName?: string;
   assigneeEmail?: string;
   assigneeId?: string;
@@ -51,6 +54,7 @@ export function GoalCard({
   onEdit?: (goal: Goal) => void;
 }) {
   const [_editOpen, _setEditOpen] = useState(false);
+  const [completing, setCompleting] = useState(false);
   const totalTasks = goal.totalTasks || goal.tasks?.length || 0;
   const completedTeamTasks = goal.completedTeamTasks || 0;
   const completedPersonalTasks = goal.completedPersonalTasks || 0;
@@ -66,6 +70,41 @@ export function GoalCard({
 
   const isOverdue = daysRemaining !== null && daysRemaining < 0;
   const isUrgent = daysRemaining !== null && daysRemaining <= 7 && daysRemaining >= 0;
+  const allTasksCompleted = totalTasks > 0 && completedTeamTasks === totalTasks;
+
+  const handleComplete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (goal.status === 'completed') {
+      toast.error('Goal is already completed');
+      return;
+    }
+    setCompleting(true);
+    try {
+      const result = await completeGoal(goal.id);
+      if (result.error) {
+        toast.error(result.error);
+        setCompleting(false);
+        return;
+      }
+      toast.success('Goal completed and points distributed!');
+      // Dispatch event to refresh goals list
+      try {
+        const goalsRes = await fetch('/api/goals');
+        if (goalsRes.ok) {
+          const updatedGoals = await goalsRes.json();
+          // Dispatch event to update goals
+          window.dispatchEvent(new CustomEvent('goals-updated', { detail: updatedGoals }));
+        }
+      } catch (e) {
+        console.error('Failed to refetch goals:', e);
+      }
+    } catch (e) {
+      console.error('Failed to complete goal:', e);
+      toast.error('Failed to complete goal');
+    } finally {
+      setCompleting(false);
+    }
+  };
 
   const getAvatarFallback = (name?: string) => {
     if (!name) {
@@ -263,6 +302,27 @@ export function GoalCard({
             >
               <IconTrash size={16} />
             </Button>
+
+            {/* Complete Button - shown when all tasks are completed and goal is not already completed */}
+            {allTasksCompleted && goal.status !== 'completed' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+                onClick={handleComplete}
+                disabled={completing}
+              >
+                <IconCheck size={16} />
+              </Button>
+            )}
+
+            {/* Completed Badge - shown when goal is already completed */}
+            {goal.status === 'completed' && (
+              <div className="flex items-center gap-1.5 rounded-full bg-green-50 px-2 py-1 dark:bg-green-950">
+                <IconCheck size={14} className="text-green-600 dark:text-green-400" />
+                <span className="text-xs font-medium text-green-600 dark:text-green-400">Completed</span>
+              </div>
+            )}
 
             {/* Edit Button */}
             <Button

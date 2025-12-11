@@ -28,6 +28,7 @@ export async function GET() {
         description: goalTable.description,
         points: goalTable.points,
         dueDate: goalTable.dueDate,
+        status: goalTable.status,
       })
       .from(goalTable)
       .where(eq(goalTable.groupId, session.session.activeOrganizationId));

@@ -4,6 +4,8 @@ import type { Status } from '@/lib/task/task-types';
 import { eq, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
+import { revertGoalCompletion } from '@/app/(main)/dashboard/revert-goal-completion-actions';
+
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { calculateTaskPoints } from '@/lib/utils/calculateTaskPoints';
@@ -11,6 +13,8 @@ import {
   awardPointsToAssignees,
   deductPointsFromAssignees,
 } from '@/lib/utils/pointTransactionHelpers';
+import { goalTable } from '@/schema/goal';
+import { goalTasksTable } from '@/schema/goal_tasks';
 import { taskAssigneesTable, taskTable } from '@/schema/task';
 
 export async function updateTaskStatus(taskId: string, status: Status) {
@@ -108,6 +112,19 @@ export async function updateTaskStatus(taskId: string, status: Status) {
           newStatus: status,
         },
       );
+
+      // Check if this task is part of a completed goal - if so, revert the goal
+      const goalsContainingTask = await db
+        .select({ id: goalTable.id })
+        .from(goalTasksTable)
+        .innerJoin(goalTable, eq(goalTasksTable.goalId, goalTable.id))
+        .where(eq(goalTasksTable.taskId, taskId));
+
+      for (const goal of goalsContainingTask) {
+        if (goal.id) {
+          await revertGoalCompletion(goal.id);
+        }
+      }
     }
 
     revalidatePath('/tasks');

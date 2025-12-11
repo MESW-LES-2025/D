@@ -24,6 +24,7 @@ type Goal = {
   description?: string;
   points?: number;
   dueDate?: string;
+  status?: 'active' | 'paused' | 'completed' | 'archived';
   assigneeId?: string;
   assigneeName?: string;
   assigneeEmail?: string;
@@ -91,15 +92,27 @@ export default function TeamGoals() {
       }
     }
 
+    function onUpdated(e: any) {
+      const updatedGoals = e?.detail;
+      if (Array.isArray(updatedGoals)) {
+        setGoals(updatedGoals);
+      } else {
+        fetchGoals();
+      }
+    }
+
     const handleCreated = onCreated as EventListener;
     const handleDeleted = onDeleted as EventListener;
+    const handleUpdated = onUpdated as EventListener;
 
     window.addEventListener('goal-created', handleCreated);
     window.addEventListener('goal-deleted', handleDeleted);
+    window.addEventListener('goals-updated', handleUpdated);
 
     return () => {
       window.removeEventListener('goal-created', handleCreated);
       window.removeEventListener('goal-deleted', handleDeleted);
+      window.removeEventListener('goals-updated', handleUpdated);
     };
   }, []);
 
