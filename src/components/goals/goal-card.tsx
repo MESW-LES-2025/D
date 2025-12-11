@@ -6,12 +6,14 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { getInitials } from '@/lib/utils';
 
 type Task = {
   id: string;
   name: string;
   completed?: boolean;
+  isPersonal?: boolean;
+  assignees?: Array<{ id: string; name: string }>;
 };
 
 type Goal = {
@@ -24,6 +26,9 @@ type Goal = {
   assigneeEmail?: string;
   assigneeId?: string;
   tasks?: Task[];
+  totalTasks?: number;
+  completedTeamTasks?: number;
+  completedPersonalTasks?: number;
   onDelete?: (id: string) => void;
   onEdit?: (goal: Goal) => void;
 };
@@ -38,9 +43,11 @@ export function GoalCard({
   onEdit?: (goal: Goal) => void;
 }) {
   const [_editOpen, _setEditOpen] = useState(false);
-  const totalTasks = goal.tasks?.length || 0;
-  const completedTasks = 0; // Hardcoded as 0 until task completion feature is added
-  const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+  const totalTasks = goal.totalTasks || goal.tasks?.length || 0;
+  const completedTeamTasks = goal.completedTeamTasks || 0;
+  const completedPersonalTasks = goal.completedPersonalTasks || 0;
+  const overallProgressPercentage = totalTasks > 0 ? (completedTeamTasks / totalTasks) * 100 : 0;
+  const personalProgressPercentage = totalTasks > 0 ? (completedPersonalTasks / totalTasks) * 100 : 0;
 
   // Calculate days remaining
   const dueDate = goal.dueDate ? new Date(goal.dueDate) : null;
@@ -85,18 +92,51 @@ export function GoalCard({
       <CardContent className="space-y-5">
         {/* Progress Section */}
         {totalTasks > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium text-muted-foreground">Progress</span>
+              <span className="font-medium text-muted-foreground">Team Progress</span>
               <span className="font-semibold text-foreground">
-                {completedTasks}
+                {completedTeamTasks}
                 /
                 {totalTasks}
                 {' '}
                 tasks
               </span>
             </div>
-            <Progress value={progressPercentage} className="h-2" />
+            {/* Stacked progress bar: personal (green) on top of team (blue) */}
+            <div className="relative h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+              {/* Team progress bar */}
+              <div
+                className="absolute left-0 top-0 h-full bg-blue-500 transition-all duration-300"
+                style={{ width: `${overallProgressPercentage}%` }}
+              />
+              {/* Personal progress bar (overlaid) */}
+              <div
+                className="absolute left-0 top-0 h-full bg-green-500 transition-all duration-300"
+                style={{ width: `${personalProgressPercentage}%` }}
+              />
+            </div>
+            {/* Legend */}
+            <div className="flex gap-3 text-xs">
+              <div className="flex items-center gap-1.5">
+                <div className="h-2 w-2 rounded-full bg-green-500" />
+                <span className="text-muted-foreground">Your tasks</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="h-2 w-2 rounded-full bg-blue-500" />
+                <span className="text-muted-foreground">Team progress</span>
+              </div>
+            </div>
+            {/* Personal progress info */}
+            {completedPersonalTasks > 0 && (
+              <p className="text-xs text-muted-foreground">
+                You've completed
+                {' '}
+                <span className="font-semibold text-foreground">{completedPersonalTasks}</span>
+                {' '}
+                of your assigned tasks
+              </p>
+            )}
           </div>
         )}
 
@@ -107,8 +147,28 @@ export function GoalCard({
             <div className="space-y-1.5">
               {goal.tasks.map(task => (
                 <div key={task.id} className="flex items-start gap-2 text-sm">
-                  <IconCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                  <span className="text-foreground">{task.name}</span>
+                  <IconCircle
+                    className={`mt-0.5 h-4 w-4 shrink-0 ${
+                      task.completed
+                        ? 'text-green-600 dark:text-green-400'
+                        : 'text-muted-foreground'
+                    }`}
+                  />
+                  <span className={`flex-1 ${task.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                    {task.name}
+                  </span>
+                  {/* Assignees avatars */}
+                  {task.assignees && task.assignees.length > 0 && (
+                    <div className="ml-auto flex -space-x-2">
+                      {task.assignees.map(assignee => (
+                        <Avatar key={assignee.id} className="h-5 w-5 border border-background">
+                          <AvatarFallback className="text-xs">
+                            {getInitials(assignee.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

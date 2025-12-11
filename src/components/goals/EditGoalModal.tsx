@@ -38,6 +38,8 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { TeamGoalValidation } from '@/validations/TeamGoalValidation';
+import { getInitials } from '@/lib/utils';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 type FormData = z.infer<typeof TeamGoalValidation>;
 
@@ -45,6 +47,12 @@ type Member = {
   id: string;
   name: string;
   email: string;
+};
+
+type Task = {
+  id: string;
+  name: string;
+  assignees?: Array<{ id: string; name: string }>;
 };
 
 type Props = {
@@ -61,12 +69,12 @@ type Props = {
     assigneeName?: string;
     tasks?: { id: string; name: string }[];
   };
-  tasks?: { id: string; name: string }[];
+  tasks?: Task[];
   members?: Member[];
 };
 
 const defaultMembers: Member[] = [];
-const defaultTasks: { id: string; name: string }[] = [];
+const defaultTasks: Task[] = [];
 
 export function EditGoalModal({
   open,
@@ -275,22 +283,52 @@ export function EditGoalModal({
                             : (
                                 tasks.map((task) => {
                                   const isChecked = (field.value || []).includes(task.id);
+                                  const taskAssigneeIds = task.assignees?.map(a => a.id) || [];
+                                  // Check if goal assignees are included in task assignees
+                                  const goalAssigneeIds = selectedAssigneeIds || [];
+                                  const isTaskCompatible = goalAssigneeIds.length === 0 || goalAssigneeIds.every(id => taskAssigneeIds.includes(id));
+
                                   return (
-                                    <label key={task.id} className="flex cursor-pointer items-center gap-2 rounded p-2 transition-colors hover:bg-accent">
-                                      <input
-                                        type="checkbox"
-                                        value={task.id}
-                                        checked={isChecked}
-                                        onChange={(e) => {
-                                          const checked = e.target.checked;
-                                          const current = field.value || [];
-                                          const next = checked ? [...current, task.id] : current.filter((id: string) => id !== task.id);
-                                          field.onChange(next);
-                                        }}
-                                        className="cursor-pointer"
-                                      />
-                                      <span className="line-clamp-2 text-sm">{task.name}</span>
-                                    </label>
+                                    <div key={task.id} className="flex flex-col gap-1.5">
+                                      <label className={`flex cursor-pointer items-center gap-2 rounded p-2 transition-colors hover:bg-accent ${
+                                        !isTaskCompatible && isChecked ? 'bg-yellow-50 dark:bg-yellow-950' : ''
+                                      }`}>
+                                        <input
+                                          type="checkbox"
+                                          value={task.id}
+                                          checked={isChecked}
+                                          onChange={(e) => {
+                                            const checked = e.target.checked;
+                                            const current = field.value || [];
+                                            const next = checked ? [...current, task.id] : current.filter((id: string) => id !== task.id);
+                                            field.onChange(next);
+                                          }}
+                                          className="cursor-pointer"
+                                        />
+                                        <span className="line-clamp-2 flex-1 text-sm">{task.name}</span>
+                                      </label>
+                                      {/* Task Assignees */}
+                                      {task.assignees && task.assignees.length > 0 && (
+                                        <div className="ml-6 flex flex-col gap-1">
+                                          <div className="flex items-center gap-1">
+                                            {task.assignees.map(assignee => (
+                                              <Avatar key={assignee.id} className={`h-5 w-5 border border-background ${
+                                                goalAssigneeIds.includes(assignee.id) ? 'ring-2 ring-green-500' : ''
+                                              }`}>
+                                                <AvatarFallback className="text-xs">
+                                                  {getInitials(assignee.name)}
+                                                </AvatarFallback>
+                                              </Avatar>
+                                            ))}
+                                          </div>
+                                          {isChecked && !isTaskCompatible && (
+                                            <span className="text-xs text-yellow-700 dark:text-yellow-400">
+                                              ⚠ Not all goal members are assigned to this task
+                                            </span>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
                                   );
                                 })
                               )}

@@ -28,7 +28,16 @@ type Goal = {
   assigneeName?: string;
   assigneeEmail?: string;
   taskIds?: string[];
-  tasks?: { id: string; name: string }[];
+  tasks?: {
+    id: string;
+    name: string;
+    completed?: boolean;
+    isPersonal?: boolean;
+    assignees?: Array<{ id: string; name: string }>;
+  }[];
+  totalTasks?: number;
+  completedTeamTasks?: number;
+  completedPersonalTasks?: number;
 };
 
 export default function TeamGoals() {
@@ -146,30 +155,10 @@ export default function TeamGoals() {
         return;
       }
 
-      // Update the goal in the list
-      const assigneeId = values.assigneeIds?.[0];
-      const assignee = assigneeId ? members.find(m => m.id === assigneeId) : null;
-
-      setGoals(prevGoals =>
-        prevGoals.map(g =>
-          g.id === editingGoal.id
-            ? {
-                ...g,
-                name: values.title,
-                description: values.description,
-                points: Number.parseInt(values.pointsReward, 10) || 0,
-                dueDate: values.dueDate,
-                assigneeName: assignee?.name,
-                assigneeEmail: assignee?.email,
-                assigneeId,
-                tasks: values.taskIds?.map((taskId: string) => {
-                  const task = tasks.find(t => t.id === taskId);
-                  return { id: taskId, name: task?.name || '' };
-                }) || [],
-              }
-            : g,
-        ),
-      );
+      // Refetch goals to get updated progress data and assignee info
+      const res = await fetch('/api/goals');
+      const updatedGoals = await res.json();
+      setGoals(updatedGoals);
 
       toast.success('Goal updated');
       setEditOpen(false);

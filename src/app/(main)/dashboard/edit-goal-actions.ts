@@ -1,12 +1,13 @@
 'use server';
 
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { goalTable } from '@/schema/goal';
 import { goalTasksTable } from '@/schema/goal_tasks';
+import { taskAssigneesTable } from '@/schema/task';
 
 export async function updateGoal(
   goalId: string,
@@ -57,6 +58,36 @@ export async function updateGoal(
 
     // Update task associations - delete old ones and insert new ones
     if (data.taskIds && Array.isArray(data.taskIds)) {
+      const goalAssigneeId = data.assigneeIds?.[0];
+
+      // If there are goal assignees, validate that all selected tasks include them
+      if (goalAssigneeId && data.taskIds.length > 0) {
+        const taskAssignments = await db
+          .select({
+            taskId: taskAssigneesTable.taskId,
+            userId: taskAssigneesTable.userId,
+          })
+          .from(taskAssigneesTable)
+          .where(inArray(taskAssigneesTable.taskId, data.taskIds));
+
+        // Check if goal assignee is assigned to all selected tasks
+        const assignedTaskIds = new Set(
+          taskAssignments
+            .filter(ta => ta.userId === goalAssigneeId)
+            .map(ta => ta.taskId),
+        );
+
+        const unassignedTasks = data.taskIds.filter(
+          (taskId: string) => !assignedTaskIds.has(taskId),
+        );
+
+        if (unassignedTasks.length > 0) {
+          return {
+            error: `Goal member is not assigned to ${unassignedTasks.length} task(s). Please assign the goal member to all tasks or remove those tasks.`,
+          };
+        }
+      }
+
       // Delete all existing associations for this goal
       await db.delete(goalTasksTable).where(eq(goalTasksTable.goalId, goalId));
 
@@ -68,6 +99,7 @@ export async function updateGoal(
     }
 
     revalidatePath('/dashboard');
+    revalidatePath('/goals');
 
     return { success: true, data: updated };
   } catch (e) {
