@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
-import { taskTable, taskAssigneesTable } from '@/schema/task';
+import { taskAssigneesTable, taskTable } from '@/schema/task';
 import { userTable } from '@/schema/user';
 
 export async function GET() {

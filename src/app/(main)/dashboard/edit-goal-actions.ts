@@ -6,8 +6,8 @@ import { headers } from 'next/headers';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { goalTable } from '@/schema/goal';
-import { goalTasksTable } from '@/schema/goal_tasks';
 import { goalAssigneesTable } from '@/schema/goal_assignees';
+import { goalTasksTable } from '@/schema/goal_tasks';
 import { taskAssigneesTable } from '@/schema/task';
 
 export async function updateGoal(

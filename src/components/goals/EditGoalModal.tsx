@@ -6,6 +6,7 @@ import { IconCheck, IconSelector } from '@tabler/icons-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -36,10 +37,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 import { TeamGoalValidation } from '@/validations/TeamGoalValidation';
-import { getInitials } from '@/lib/utils';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 type FormData = z.infer<typeof TeamGoalValidation>;
 
@@ -307,7 +306,8 @@ export function EditGoalModal({
                                     <div key={task.id} className="flex flex-col gap-1.5">
                                       <label className={`flex cursor-pointer items-center gap-2 rounded p-2 transition-colors hover:bg-accent ${
                                         !isTaskCompatible && isChecked ? 'bg-yellow-50 dark:bg-yellow-950' : ''
-                                      }`}>
+                                      }`}
+                                      >
                                         <input
                                           type="checkbox"
                                           value={task.id}
@@ -327,9 +327,12 @@ export function EditGoalModal({
                                         <div className="ml-6 flex flex-col gap-1">
                                           <div className="flex items-center gap-1">
                                             {task.assignees.map(assignee => (
-                                              <Avatar key={assignee.id} className={`h-5 w-5 border border-background ${
-                                                goalAssigneeIds.includes(assignee.id) ? 'ring-2 ring-green-500' : ''
-                                              }`}>
+                                              <Avatar
+                                                key={assignee.id}
+                                                className={`h-5 w-5 border border-background ${
+                                                  goalAssigneeIds.includes(assignee.id) ? 'ring-2 ring-green-500' : ''
+                                                }`}
+                                              >
                                                 <AvatarFallback className="text-xs">
                                                   {getInitials(assignee.name)}
                                                 </AvatarFallback>

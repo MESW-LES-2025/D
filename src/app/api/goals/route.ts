@@ -4,10 +4,9 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { goalTable } from '@/schema/goal';
-import { goalTasksTable } from '@/schema/goal_tasks';
 import { goalAssigneesTable } from '@/schema/goal_assignees';
-import { taskTable } from '@/schema/task';
-import { taskAssigneesTable } from '@/schema/task';
+import { goalTasksTable } from '@/schema/goal_tasks';
+import { taskAssigneesTable, taskTable } from '@/schema/task';
 import { userTable } from '@/schema/user';
 
 export async function GET() {
@@ -33,7 +32,7 @@ export async function GET() {
       .from(goalTable)
       .where(eq(goalTable.groupId, session.session.activeOrganizationId));
 
-    console.log('[API] Fetched goals from DB:', goals.length, goals);
+    // console.log('[API] Fetched goals from DB:', goals.length, goals);
 
     const goalIds = goals.map((g: any) => g.id);
     const currentUserId = session.user?.id;
@@ -147,7 +146,7 @@ export async function GET() {
       };
     });
 
-    console.log('[API] Final result:', result);
+    // console.log('[API] Final result:', result);
 
     return NextResponse.json(result);
   } catch (e) {

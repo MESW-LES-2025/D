@@ -1,4 +1,4 @@
-import { pgTable, primaryKey, uuid, text } from 'drizzle-orm/pg-core';
+import { pgTable, primaryKey, text, uuid } from 'drizzle-orm/pg-core';
 import { goalTable } from './goal';
 import { userTable } from './user';
 

@@ -2,16 +2,17 @@
 
 import { IconCalendar, IconCircle, IconEdit, IconTrash, IconTrophy } from '@tabler/icons-react';
 import { useState } from 'react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+
 import { getInitials } from '@/lib/utils';
 
 type Task = {
@@ -114,12 +115,12 @@ export function GoalCard({
             <div className="relative h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
               {/* Team progress bar */}
               <div
-                className="absolute left-0 top-0 h-full bg-blue-500 transition-all duration-300"
+                className="absolute top-0 left-0 h-full bg-blue-500 transition-all duration-300"
                 style={{ width: `${overallProgressPercentage}%` }}
               />
               {/* Personal progress bar (overlaid) */}
               <div
-                className="absolute left-0 top-0 h-full bg-green-500 transition-all duration-300"
+                className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
                 style={{ width: `${personalProgressPercentage}%` }}
               />
             </div>
@@ -163,7 +164,7 @@ export function GoalCard({
                         : 'text-muted-foreground'
                     }`}
                   />
-                  <span className={`flex-1 ${task.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                  <span className={`flex-1 ${task.completed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
                     {task.name}
                   </span>
                   {/* Assignees avatars */}
@@ -195,7 +196,7 @@ export function GoalCard({
                       {goal.assignees.map(assignee => (
                         <Tooltip key={assignee.id}>
                           <TooltipTrigger asChild>
-                            <Avatar className="h-8 w-8 border-2 border-background cursor-pointer">
+                            <Avatar className="h-8 w-8 cursor-pointer border-2 border-background">
                               <AvatarFallback className="text-xs font-medium">
                                 {getInitials(assignee.name)}
                               </AvatarFallback>
@@ -211,7 +212,8 @@ export function GoalCard({
                       <span className="text-xs font-medium text-foreground">
                         {goal.assignees.length}
                         {' '}
-                        assignee{goal.assignees.length === 1 ? '' : 's'}
+                        assignee
+                        {goal.assignees.length === 1 ? '' : 's'}
                       </span>
                     </div>
                   </div>
