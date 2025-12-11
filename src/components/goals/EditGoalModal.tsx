@@ -67,6 +67,7 @@ type Props = {
     points?: number;
     assigneeId?: string;
     assigneeName?: string;
+    assignees?: Array<{ id: string; name: string; email: string }>;
     tasks?: { id: string; name: string }[];
   };
   tasks?: Task[];
@@ -94,7 +95,7 @@ export function EditGoalModal({
       pointsReward: goal.points?.toString() || '',
       description: goal.description || '',
       dueDate: goal.dueDate ? new Date(goal.dueDate).toISOString().split('T')[0] : '',
-      assigneeIds: goal.assigneeId ? [goal.assigneeId] : [],
+      assigneeIds: goal.assignees?.map(a => a.id) || (goal.assigneeId ? [goal.assigneeId] : []),
       taskIds: goal.tasks?.map(t => t.id) || [],
     },
   });
@@ -172,9 +173,22 @@ export function EditGoalModal({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Due Date (optional)</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
+                      <div className="flex gap-2">
+                        <FormControl className="flex-1">
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        {field.value && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => field.onChange('')}
+                            className="px-2"
+                          >
+                            Clear
+                          </Button>
+                        )}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -195,7 +209,7 @@ export function EditGoalModal({
                   )}
                 />
 
-                {/* --- Assignees --- */}
+                {/* --- Assignee --- */}
                 <FormField
                   control={form.control}
                   name="assigneeIds"
@@ -216,7 +230,7 @@ export function EditGoalModal({
                                     )}
                                   >
                                     {selectedAssignees.length > 0
-                                      ? `${selectedAssignees.length} member${selectedAssignees.length > 1 ? 's' : ''} selected`
+                                      ? `${selectedAssignees.length} member${selectedAssignees.length === 1 ? '' : 's'} selected`
                                       : 'Select members...'}
                                     <IconSelector className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                   </Button>
@@ -234,10 +248,11 @@ export function EditGoalModal({
                                           key={member.id}
                                           value={`${member.name} ${member.email}`}
                                           onSelect={() => {
-                                            const newValue = isSelected
+                                            // Multi-select - toggle selection
+                                            const newSelection = isSelected
                                               ? selectedAssigneeIds.filter(id => id !== member.id)
                                               : [...selectedAssigneeIds, member.id];
-                                            field.onChange(newValue);
+                                            field.onChange(newSelection);
                                           }}
                                         >
                                           <IconCheck
@@ -284,9 +299,9 @@ export function EditGoalModal({
                                 tasks.map((task) => {
                                   const isChecked = (field.value || []).includes(task.id);
                                   const taskAssigneeIds = task.assignees?.map(a => a.id) || [];
-                                  // Check if goal assignees are included in task assignees
+                                  // Check if any goal assignee is included in task assignees
                                   const goalAssigneeIds = selectedAssigneeIds || [];
-                                  const isTaskCompatible = goalAssigneeIds.length === 0 || goalAssigneeIds.every(id => taskAssigneeIds.includes(id));
+                                  const isTaskCompatible = goalAssigneeIds.length === 0 || goalAssigneeIds.some(id => taskAssigneeIds.includes(id));
 
                                   return (
                                     <div key={task.id} className="flex flex-col gap-1.5">
@@ -323,7 +338,7 @@ export function EditGoalModal({
                                           </div>
                                           {isChecked && !isTaskCompatible && (
                                             <span className="text-xs text-yellow-700 dark:text-yellow-400">
-                                              ⚠ Not all goal members are assigned to this task
+                                              ⚠ No goal members are assigned to this task
                                             </span>
                                           )}
                                         </div>

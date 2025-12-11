@@ -5,6 +5,7 @@ import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { goalTable } from '@/schema/goal';
 import { goalTasksTable } from '@/schema/goal_tasks';
+import { goalAssigneesTable } from '@/schema/goal_assignees';
 import { taskTable } from '@/schema/task';
 import { taskAssigneesTable } from '@/schema/task';
 import { userTable } from '@/schema/user';
@@ -28,16 +29,37 @@ export async function GET() {
         description: goalTable.description,
         points: goalTable.points,
         dueDate: goalTable.dueDate,
-        assigneeId: goalTable.assigneeId,
-        assigneeName: userTable.name,
-        assigneeEmail: userTable.email,
       })
       .from(goalTable)
-      .leftJoin(userTable, eq(goalTable.assigneeId, userTable.id))
       .where(eq(goalTable.groupId, session.session.activeOrganizationId));
+
+    console.log('[API] Fetched goals from DB:', goals.length, goals);
 
     const goalIds = goals.map((g: any) => g.id);
     const currentUserId = session.user?.id;
+
+    // Get assignees for all goals
+    let goalAssignees: any[] = [];
+    if (goalIds.length > 0) {
+      goalAssignees = await db
+        .select({
+          goalId: goalAssigneesTable.goalId,
+          userId: goalAssigneesTable.userId,
+          userName: userTable.name,
+          userEmail: userTable.email,
+        })
+        .from(goalAssigneesTable)
+        .innerJoin(userTable, eq(goalAssigneesTable.userId, userTable.id))
+        .where(inArray(goalAssigneesTable.goalId, goalIds));
+    }
+
+    // Map goal assignees
+    const goalAssigneeMap = new Map<string, Array<{ id: string; name: string; email: string }>>();
+    for (const ga of goalAssignees) {
+      const arr = goalAssigneeMap.get(ga.goalId) || [];
+      arr.push({ id: ga.userId, name: ga.userName, email: ga.userEmail });
+      goalAssigneeMap.set(ga.goalId, arr);
+    }
 
     let associations: any[] = [];
     if (goalIds.length > 0) {
@@ -114,14 +136,18 @@ export async function GET() {
 
     const result = goals.map((g: any) => {
       const tasks = tasksByGoal.get(g.id) || [];
+      const assignees = goalAssigneeMap.get(g.id) || [];
       return {
         ...g,
+        assignees,
         tasks,
         totalTasks: tasks.length,
         completedTeamTasks: completedTeamTasksByGoal.get(g.id) || 0,
         completedPersonalTasks: completedPersonalTasksByGoal.get(g.id) || 0,
       };
     });
+
+    console.log('[API] Final result:', result);
 
     return NextResponse.json(result);
   } catch (e) {

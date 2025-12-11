@@ -2,6 +2,12 @@
 
 import { IconCalendar, IconCircle, IconEdit, IconTrash, IconTrophy } from '@tabler/icons-react';
 import { useState } from 'react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,6 +31,7 @@ type Goal = {
   assigneeName?: string;
   assigneeEmail?: string;
   assigneeId?: string;
+  assignees?: Array<{ id: string; name: string; email: string }>;
   tasks?: Task[];
   totalTasks?: number;
   completedTeamTasks?: number;
@@ -150,7 +157,9 @@ export function GoalCard({
                   <IconCircle
                     className={`mt-0.5 h-4 w-4 shrink-0 ${
                       task.completed
-                        ? 'text-green-600 dark:text-green-400'
+                        ? task.isPersonal
+                          ? 'text-green-600 dark:text-green-400'
+                          : 'text-blue-600 dark:text-blue-400'
                         : 'text-muted-foreground'
                     }`}
                   />
@@ -177,19 +186,49 @@ export function GoalCard({
 
         {/* Footer Section */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
-          {/* Assignee */}
-          {goal.assigneeName && (
-            <div className="flex items-center gap-2">
-              <Avatar className="h-8 w-8 border-2 border-background">
-                <AvatarFallback className="text-xs font-medium">
-                  {getAvatarFallback(goal.assigneeName)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col">
-                <span className="text-xs font-medium text-foreground">{goal.assigneeName}</span>
+          {/* Assignees */}
+          {goal.assignees && goal.assignees.length > 0
+            ? (
+                <TooltipProvider>
+                  <div className="flex items-center gap-2">
+                    <div className="flex -space-x-2">
+                      {goal.assignees.map(assignee => (
+                        <Tooltip key={assignee.id}>
+                          <TooltipTrigger asChild>
+                            <Avatar className="h-8 w-8 border-2 border-background cursor-pointer">
+                              <AvatarFallback className="text-xs font-medium">
+                                {getInitials(assignee.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {assignee.name}
+                          </TooltipContent>
+                        </Tooltip>
+                      ))}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-medium text-foreground">
+                        {goal.assignees.length}
+                        {' '}
+                        assignee{goal.assignees.length === 1 ? '' : 's'}
+                      </span>
+                    </div>
+                  </div>
+                </TooltipProvider>
+              )
+            : goal.assigneeName && (
+              <div className="flex items-center gap-2">
+                <Avatar className="h-8 w-8 border-2 border-background">
+                  <AvatarFallback className="text-xs font-medium">
+                    {getAvatarFallback(goal.assigneeName)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <span className="text-xs font-medium text-foreground">{goal.assigneeName}</span>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           <div className="ml-auto flex items-center gap-3">
             {/* Due Date */}

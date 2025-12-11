@@ -9,6 +9,7 @@
  */
 
 export * from './goal';
+export * from './goal_assignees';
 export * from './organization';
 export * from './points';
 export * from './task';

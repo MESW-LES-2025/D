@@ -27,6 +27,7 @@ type Goal = {
   assigneeId?: string;
   assigneeName?: string;
   assigneeEmail?: string;
+  assignees?: Array<{ id: string; name: string; email: string }>;
   taskIds?: string[];
   tasks?: {
     id: string;

@@ -64,27 +64,40 @@ export function CreateGoalButton({ onCreate }: Props) {
       }
 
       toast.success('Goal created successfully!');
+      // Refetch goals to get updated data with task completion status
       try {
-        if (result.data) {
-          // Get the assignee name from the members list
-          const assigneeId = values.assigneeIds?.[0];
-          const assignee = assigneeId ? members?.find(m => m.id === assigneeId) : null;
-
-          const payload = {
-            ...result.data,
-            taskIds: values.taskIds || [],
-            assigneeIds: values.assigneeIds || [],
-            points: values.pointsReward ? Number.parseInt(values.pointsReward, 10) : 0,
-            assigneeName: assignee?.name,
-            assigneeEmail: assignee?.email,
-            tasks: values.taskIds?.map((taskId: string) => {
-              const task = tasks?.find(t => t.id === taskId);
-              return { id: taskId, name: task?.name || '' };
-            }) || [],
-          };
-          window.dispatchEvent(new CustomEvent('goal-created', { detail: payload }));
+        const goalsRes = await fetch('/api/goals');
+        if (goalsRes.ok) {
+          const updatedGoals = await goalsRes.json();
+          // Dispatch event with full goal data
+          const newGoal = updatedGoals.find((g: any) => result.data && g.id === result.data.id);
+          if (newGoal) {
+            window.dispatchEvent(new CustomEvent('goal-created', { detail: newGoal }));
+          }
         }
-      } catch {}
+      } catch {
+        // Fallback: dispatch with basic data if refetch fails
+        try {
+          if (result.data) {
+            const assigneeId = values.assigneeIds?.[0];
+            const assignee = assigneeId ? members?.find(m => m.id === assigneeId) : null;
+
+            const payload = {
+              ...result.data,
+              taskIds: values.taskIds || [],
+              assigneeIds: values.assigneeIds || [],
+              points: values.pointsReward ? Number.parseInt(values.pointsReward, 10) : 0,
+              assigneeName: assignee?.name,
+              assigneeEmail: assignee?.email,
+              tasks: values.taskIds?.map((taskId: string) => {
+                const task = tasks?.find(t => t.id === taskId);
+                return { id: taskId, name: task?.name || '' };
+              }) || [],
+            };
+            window.dispatchEvent(new CustomEvent('goal-created', { detail: payload }));
+          }
+        } catch {}
+      }
       onCreate(result.data);
       setOpen(false);
     } catch (e) {
