@@ -116,6 +116,7 @@ export function TaskSheet({ children, open, onOpenChangeAction, task, isAdmin = 
                       <DifficultyQuickAction
                         difficulty={difficultyOption}
                         taskId={task?.id ?? ''}
+                        task={task}
                       />
                     )
                   : (

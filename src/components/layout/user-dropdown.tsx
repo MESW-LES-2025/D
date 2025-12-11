@@ -29,7 +29,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { client, signOut } from '@/lib/auth/auth-client';
 import { getInitials } from '@/lib/utils';
 
-export function UserDropdown() {
+export function UserDropdown({ earnedPoints = 0 }: { earnedPoints?: number }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
   const { data: session, isPending } = client.useSession();
@@ -116,6 +116,14 @@ export function UserDropdown() {
                 </div>
               </div>
             </DropdownMenuLabel>
+            <div className="px-2 py-1.5">
+              <div className="text-xs text-muted-foreground">Total Points</div>
+              <div className="font-semibold text-foreground">
+                {earnedPoints}
+                {' '}
+                points
+              </div>
+            </div>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
