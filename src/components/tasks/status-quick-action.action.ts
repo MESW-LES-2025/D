@@ -1,7 +1,7 @@
 'use server';
 
 import type { Status } from '@/lib/task/task-types';
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { revertGoalCompletion } from '@/app/(main)/dashboard/revert-goal-completion-actions';
@@ -30,7 +30,7 @@ export async function updateTaskStatus(taskId: string, status: Status) {
   }
 
   try {
-    // Fetch the task with current status and assignee count
+    // Fetch the task with current status
     const [task] = await db
       .select({
         id: taskTable.id,
@@ -40,20 +40,9 @@ export async function updateTaskStatus(taskId: string, status: Status) {
         priority: taskTable.priority,
         dueDate: taskTable.dueDate,
         score: taskTable.score,
-        assigneeCount: sql<number>`cast(count(distinct ${taskAssigneesTable.userId}) as integer)`.as('assignee_count'),
       })
       .from(taskTable)
-      .leftJoin(taskAssigneesTable, eq(taskTable.id, taskAssigneesTable.taskId))
       .where(eq(taskTable.id, taskId))
-      .groupBy(
-        taskTable.id,
-        taskTable.title,
-        taskTable.status,
-        taskTable.difficulty,
-        taskTable.priority,
-        taskTable.dueDate,
-        taskTable.score,
-      )
       .limit(1);
 
     if (!task) {
@@ -62,11 +51,16 @@ export async function updateTaskStatus(taskId: string, status: Status) {
 
     const oldStatus = task.status;
 
+    // Get assignee count for the response
+    const assignees = await db
+      .select({ userId: taskAssigneesTable.userId })
+      .from(taskAssigneesTable)
+      .where(eq(taskAssigneesTable.taskId, taskId));
+
     const score = await calculateTaskPoints(
       task.priority,
       task.difficulty,
       task.dueDate,
-      task.assigneeCount ?? 0,
       status,
     );
 
@@ -130,7 +124,7 @@ export async function updateTaskStatus(taskId: string, status: Status) {
     revalidatePath('/tasks');
     revalidatePath('/goals');
     revalidatePath('/');
-    return { success: true, score };
+    return { success: true, score, assigneeCount: assignees.length };
   } catch (error) {
     console.error('Failed to update task status:', error);
     return { error: 'Failed to update task status' };

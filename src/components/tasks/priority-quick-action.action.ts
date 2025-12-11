@@ -1,14 +1,14 @@
 'use server';
 
 import type { Priority } from '@/lib/task/task-types';
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { calculateTaskPoints } from '@/lib/utils/calculateTaskPoints';
 import { adjustPointsForPropertyChange } from '@/lib/utils/pointTransactionHelpers';
-import { taskAssigneesTable, taskTable } from '@/schema/task';
+import { taskTable } from '@/schema/task';
 
 export async function updateTaskPriority(taskId: string, priority: Priority) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -33,12 +33,9 @@ export async function updateTaskPriority(taskId: string, priority: Priority) {
         difficulty: taskTable.difficulty,
         dueDate: taskTable.dueDate,
         score: taskTable.score,
-        assigneeCount: sql<number>`cast(count(distinct ${taskAssigneesTable.userId}) as integer)`.as('assignee_count'),
       })
       .from(taskTable)
-      .leftJoin(taskAssigneesTable, eq(taskTable.id, taskAssigneesTable.taskId))
       .where(eq(taskTable.id, taskId))
-      .groupBy(taskTable.id, taskTable.title, taskTable.status, taskTable.priority, taskTable.difficulty, taskTable.dueDate, taskTable.score)
       .limit(1);
 
     if (!task) {
@@ -52,7 +49,6 @@ export async function updateTaskPriority(taskId: string, priority: Priority) {
         priority,
         task.difficulty,
         task.dueDate,
-        task.assigneeCount ?? 0,
         'done',
       );
 

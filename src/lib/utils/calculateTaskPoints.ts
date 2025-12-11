@@ -4,19 +4,20 @@ import type { Difficulty, Priority, Status } from '@/lib/task/task-types';
 import { calculateDueDateMultiplier } from '@/lib/utils/pointCalculator';
 
 /**
- * Calculate task points using the formula:
- * points = priority * difficulty * dueDateMultiplier / assigneeCount
+ * Calculate total task points using the formula:
+ * points = priority * difficulty * dueDateMultiplier
  *
  * Priority multipliers: low=10, medium=20, high=30, urgent=40
  * Difficulty multipliers: easy=10, medium=20, hard=30
  * Due date multiplier: sigmoid function (0.5 to 2.0)
- * Assignee count: defaults to 1 if 0 to avoid division by zero
+ *
+ * NOTE: This returns the TOTAL points for the task.
+ * Distribution functions (awardPointsToAssignees, etc.) handle dividing by assignee count.
  */
 export async function calculateTaskPoints(
   priority: Priority,
   difficulty: Difficulty,
   dueDate: Date | null | undefined,
-  assigneeCount: number,
   status: Status,
 ): Promise<number> {
   // Only calculate points for done tasks
@@ -44,11 +45,8 @@ export async function calculateTaskPoints(
   // Get due date multiplier (sigmoid function)
   const dueDateMultiplier = calculateDueDateMultiplier(dueDate, new Date());
 
-  // Default to 1 assignee if count is 0 to avoid division by zero
-  const count = assigneeCount > 0 ? assigneeCount : 1;
-
-  // Calculate final points: priority * difficulty * dueDateMultiplier / assigneeCount
-  const points = (priorityMultiplier * difficultyMultiplier * dueDateMultiplier) / count;
+  // Calculate final points: priority * difficulty * dueDateMultiplier (total, not per-assignee)
+  const points = priorityMultiplier * difficultyMultiplier * dueDateMultiplier;
 
   // Return as integer
   return Math.round(points);
