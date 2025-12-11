@@ -26,9 +26,9 @@ export const taskTable = pgTable('tasks', {
 export const taskAssigneesTable = pgTable('task_assignees', {
   taskId: uuid('task_id').references(() => taskTable.id, { onDelete: 'cascade' }).notNull(),
   userId: text('user_id').references(() => userTable.id, { onDelete: 'cascade' }).notNull(),
-}, table => ({
-  pk: primaryKey({ columns: [table.taskId, table.userId] }),
-}));
+}, table => [
+  primaryKey({ columns: [table.taskId, table.userId] }),
+]);
 
 export const taskLogTable = pgTable('task_logs', {
   id: uuid('id').defaultRandom().primaryKey(),

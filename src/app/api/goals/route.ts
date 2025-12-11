@@ -3,8 +3,7 @@ import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
-import { goalTable } from '@/schema/goal';
-import { goalTasksTable } from '@/schema/goal_tasks';
+import { goalTable, goalTasksTable } from '@/schema/goal';
 import { taskTable } from '@/schema/task';
 import { userTable } from '@/schema/user';
 

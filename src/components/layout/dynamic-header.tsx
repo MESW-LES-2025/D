@@ -1,7 +1,9 @@
+import type { Notification } from '@/lib/notification/notification-types';
+
 import Link from 'next/link';
 import React from 'react';
-
 import { ModeToggle } from '@/components/common/mode-toggle';
+import { NotificationsPopover } from '@/components/common/notifications-popover';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -18,12 +20,17 @@ type BreadcrumbItemType = {
   href?: string;
 };
 
+type DataType = {
+  notifications: Notification[];
+};
+
 type DynamicHeaderProps = {
   breadcrumbs: BreadcrumbItemType[];
+  data?: DataType;
   actions?: React.ReactNode;
 };
 
-export function DynamicHeader({ breadcrumbs, actions }: DynamicHeaderProps) {
+export function DynamicHeader({ breadcrumbs, data, actions }: DynamicHeaderProps) {
   const lastIndex = breadcrumbs.length - 1;
 
   return (
@@ -72,6 +79,8 @@ export function DynamicHeader({ breadcrumbs, actions }: DynamicHeaderProps) {
         {/* Page-specific actions slot */}
         <div className="ml-auto flex items-center gap-2">
           {actions}
+
+          <NotificationsPopover notifications={data?.notifications ?? []} />
           <ModeToggle />
         </div>
       </div>
