@@ -48,7 +48,8 @@ export function StatusQuickAction({ status, taskId, showHidden = false }: Status
           'Done! Great work!',
         ];
         const randomMessage = completionMessages[Math.floor(Math.random() * completionMessages.length)];
-        toast.success(randomMessage);
+        const pointsText = result.score ? ` +${result.score} points` : '';
+        toast.success(`${randomMessage}${pointsText}`);
       } else {
         toast.success('Status updated successfully!');
       }
