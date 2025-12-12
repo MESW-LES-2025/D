@@ -1,10 +1,10 @@
 'use client';
 
+import type { DateRange } from 'react-day-picker';
 import { IconCalendar } from '@tabler/icons-react';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import type { DateRange } from 'react-day-picker';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -67,7 +67,8 @@ export function PointHistoryFilters({
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    setDateRange(parseDateRange(defaultStartDate, defaultEndDate));
+    const newDateRange = parseDateRange(defaultStartDate, defaultEndDate);
+    setDateRange(newDateRange);
   }, [defaultStartDate, defaultEndDate]);
 
   const handleDateSelect = (range: DateRange | undefined) => {
@@ -105,19 +106,23 @@ export function PointHistoryFilters({
           )}
         >
           <IconCalendar className="mr-2 size-4" />
-          {dateRange?.from ? (
-            dateRange.to ? (
-              <>
-                {format(dateRange.from, 'LLL dd, y')}
-                {' - '}
-                {format(dateRange.to, 'LLL dd, y')}
-              </>
-            ) : (
-              format(dateRange.from, 'LLL dd, y')
-            )
-          ) : (
-            <span>Pick a date range</span>
-          )}
+          {dateRange?.from
+            ? (
+                dateRange.to
+                  ? (
+                      <>
+                        {format(dateRange.from, 'LLL dd, y')}
+                        {' - '}
+                        {format(dateRange.to, 'LLL dd, y')}
+                      </>
+                    )
+                  : (
+                      format(dateRange.from, 'LLL dd, y')
+                    )
+              )
+            : (
+                <span>Pick a date range</span>
+              )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="end">
@@ -145,4 +150,3 @@ export function PointHistoryFilters({
     </Popover>
   );
 }
-

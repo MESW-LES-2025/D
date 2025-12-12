@@ -24,7 +24,7 @@ export function PointHistoryTable({ data, totalPoints }: PointHistoryTableProps)
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        {data.map((month) => (
+        {data.map(month => (
           <div
             key={month.month}
             className="flex items-center justify-between rounded-md border p-4"
@@ -60,4 +60,3 @@ export function PointHistoryTable({ data, totalPoints }: PointHistoryTableProps)
     </div>
   );
 }
-

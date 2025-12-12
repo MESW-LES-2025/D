@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
-import { and, eq, gte, lte, sql } from 'drizzle-orm';
 import { format } from 'date-fns';
+import { and, eq, gte, lte, sql } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-import { PointHistoryChart } from './_components/point-history-chart';
-import { PointHistoryFilters } from './_components/point-history-filters';
-import { PointHistoryTable } from './_components/point-history-table';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { pointTransactionsTable } from '@/schema/points';
+import { PointHistoryChart } from './_components/point-history-chart';
+import { PointHistoryFilters } from './_components/point-history-filters';
+import { PointHistoryTable } from './_components/point-history-table';
 
 export const metadata: Metadata = {
   title: 'TaskUp | Point History',
@@ -65,7 +65,7 @@ async function getMonthlyPointData(
         transactionCount: Number(t.transactionCount) || 0,
       };
     }
-    const date = new Date(parseInt(year, 10), parseInt(month, 10) - 1, 1);
+    const date = new Date(Number.parseInt(year, 10), Number.parseInt(month, 10) - 1, 1);
     return {
       month: t.month,
       monthLabel: format(date, 'MMMM yyyy'),
@@ -145,26 +145,27 @@ export default async function PointHistoryPage({
         </div>
       </div>
 
-      {monthlyData.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12">
-          <p className="text-sm text-muted-foreground">
-            No point history found for the selected date range.
-          </p>
-        </div>
-      ) : (
-        <>
-          <div className="rounded-lg border p-6">
-            <h2 className="mb-4 text-lg font-semibold">Points per Month</h2>
-            <PointHistoryChart data={monthlyData} />
-          </div>
+      {monthlyData.length === 0
+        ? (
+            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12">
+              <p className="text-sm text-muted-foreground">
+                No point history found for the selected date range.
+              </p>
+            </div>
+          )
+        : (
+            <>
+              <div className="rounded-lg border p-6">
+                <h2 className="mb-4 text-lg font-semibold">Points per Month</h2>
+                <PointHistoryChart data={monthlyData} />
+              </div>
 
-          <div className="rounded-lg border p-6">
-            <h2 className="mb-4 text-lg font-semibold">Monthly Summary</h2>
-            <PointHistoryTable data={monthlyData} totalPoints={totalPoints} />
-          </div>
-        </>
-      )}
+              <div className="rounded-lg border p-6">
+                <h2 className="mb-4 text-lg font-semibold">Monthly Summary</h2>
+                <PointHistoryTable data={monthlyData} totalPoints={totalPoints} />
+              </div>
+            </>
+          )}
     </div>
   );
 }
-

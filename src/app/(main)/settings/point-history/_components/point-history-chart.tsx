@@ -1,11 +1,11 @@
 'use client';
 
 import {
+  BarElement,
   CategoryScale,
   Chart as ChartJS,
   Legend,
   LinearScale,
-  BarElement,
   Title,
   Tooltip,
 } from 'chart.js';
@@ -41,11 +41,11 @@ export function PointHistoryChart({ data }: PointHistoryChartProps) {
   }
 
   const chartData = {
-    labels: data.map((d) => d.monthLabel),
+    labels: data.map(d => d.monthLabel),
     datasets: [
       {
         label: 'Points',
-        data: data.map((d) => d.totalPoints),
+        data: data.map(d => d.totalPoints),
         backgroundColor: '#3b82f6',
         borderColor: '#2563eb',
         borderWidth: 2,
@@ -115,4 +115,3 @@ export function PointHistoryChart({ data }: PointHistoryChartProps) {
     </div>
   );
 }
-
