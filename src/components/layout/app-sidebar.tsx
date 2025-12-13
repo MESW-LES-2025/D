@@ -4,6 +4,7 @@ import {
   IconDashboard,
   IconListCheck,
   IconSettings,
+  IconTrophy,
   IconUserShare,
 } from '@tabler/icons-react';
 import * as React from 'react';
@@ -29,6 +30,11 @@ const data = {
       title: 'Tasks',
       url: 'tasks',
       icon: IconListCheck,
+    },
+    {
+      title: 'Achievements',
+      url: 'achievements',
+      icon: IconTrophy,
     },
     {
       title: 'Team',

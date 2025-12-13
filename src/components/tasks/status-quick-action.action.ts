@@ -4,6 +4,7 @@ import type { Status } from '@/lib/task/task-types';
 import { eq, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
+import { checkAllAchievements } from '@/lib/achievements/achievement-checkers';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { calculateTaskPoints } from '@/lib/utils/calculateTaskPoints';
@@ -11,7 +12,7 @@ import {
   awardPointsToAssignees,
   deductPointsFromAssignees,
 } from '@/lib/utils/pointTransactionHelpers';
-import { taskAssigneesTable, taskTable } from '@/schema/task';
+import { taskAssigneesTable, taskLogTable, taskTable } from '@/schema/task';
 
 export async function updateTaskStatus(taskId: string, status: Status) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -72,6 +73,15 @@ export async function updateTaskStatus(taskId: string, status: Status) {
       .set({ status, score })
       .where(eq(taskTable.id, taskId));
 
+    // Log the status change
+    await db
+      .insert(taskLogTable)
+      .values({
+        taskId,
+        userId: session.user?.id,
+        action: 'status_changed',
+      });
+
     // Handle point transactions based on status change
     const isBecomingDone = status === 'done' && oldStatus !== 'done';
     const isBecomingNotDone = status !== 'done' && oldStatus === 'done';
@@ -111,8 +121,14 @@ export async function updateTaskStatus(taskId: string, status: Status) {
     }
 
     revalidatePath('/tasks');
+    revalidatePath('/achievements');
     revalidatePath('/');
-    return { success: true, score };
+
+    // Check for newly unlocked achievements
+    const achievements = await checkAllAchievements(session.user?.id || '');
+    const newlyUnlocked = achievements.filter(a => a.unlocked);
+
+    return { success: true, score, newlyUnlocked };
   } catch (error) {
     console.error('Failed to update task status:', error);
     return { error: 'Failed to update task status' };
