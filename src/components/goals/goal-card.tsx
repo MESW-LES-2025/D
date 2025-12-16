@@ -1,17 +1,28 @@
 'use client';
 
-import { IconCalendar, IconCircle, IconEdit, IconTrash, IconTrophy } from '@tabler/icons-react';
+import { IconCalendar, IconCheck, IconCircle, IconEdit, IconTrash, IconTrophy } from '@tabler/icons-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
+import { completeGoal } from '@/app/(main)/dashboard/complete-goal-actions';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+
+import { getInitials } from '@/lib/utils';
 
 type Task = {
   id: string;
   name: string;
   completed?: boolean;
+  isPersonal?: boolean;
+  assignees?: Array<{ id: string; name: string }>;
 };
 
 type Goal = {
@@ -20,10 +31,15 @@ type Goal = {
   description?: string;
   dueDate?: string;
   points?: number;
+  status?: 'active' | 'paused' | 'completed' | 'archived';
   assigneeName?: string;
   assigneeEmail?: string;
   assigneeId?: string;
+  assignees?: Array<{ id: string; name: string; email: string }>;
   tasks?: Task[];
+  totalTasks?: number;
+  completedTeamTasks?: number;
+  completedPersonalTasks?: number;
   onDelete?: (id: string) => void;
   onEdit?: (goal: Goal) => void;
 };
@@ -38,9 +54,12 @@ export function GoalCard({
   onEdit?: (goal: Goal) => void;
 }) {
   const [_editOpen, _setEditOpen] = useState(false);
-  const totalTasks = goal.tasks?.length || 0;
-  const completedTasks = 0; // Hardcoded as 0 until task completion feature is added
-  const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+  const [completing, setCompleting] = useState(false);
+  const totalTasks = goal.totalTasks || goal.tasks?.length || 0;
+  const completedTeamTasks = goal.completedTeamTasks || 0;
+  const completedPersonalTasks = goal.completedPersonalTasks || 0;
+  const overallProgressPercentage = totalTasks > 0 ? (completedTeamTasks / totalTasks) * 100 : 0;
+  const personalProgressPercentage = totalTasks > 0 ? (completedPersonalTasks / totalTasks) * 100 : 0;
 
   // Calculate days remaining
   const dueDate = goal.dueDate ? new Date(goal.dueDate) : null;
@@ -51,6 +70,41 @@ export function GoalCard({
 
   const isOverdue = daysRemaining !== null && daysRemaining < 0;
   const isUrgent = daysRemaining !== null && daysRemaining <= 7 && daysRemaining >= 0;
+  const allTasksCompleted = totalTasks > 0 && completedTeamTasks === totalTasks;
+
+  const handleComplete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (goal.status === 'completed') {
+      toast.error('Goal is already completed');
+      return;
+    }
+    setCompleting(true);
+    try {
+      const result = await completeGoal(goal.id);
+      if (result.error) {
+        toast.error(result.error);
+        setCompleting(false);
+        return;
+      }
+      toast.success('Goal completed and points distributed!');
+      // Dispatch event to refresh goals list
+      try {
+        const goalsRes = await fetch('/api/goals');
+        if (goalsRes.ok) {
+          const updatedGoals = await goalsRes.json();
+          // Dispatch event to update goals
+          window.dispatchEvent(new CustomEvent('goals-updated', { detail: updatedGoals }));
+        }
+      } catch (e) {
+        console.error('Failed to refetch goals:', e);
+      }
+    } catch (e) {
+      console.error('Failed to complete goal:', e);
+      toast.error('Failed to complete goal');
+    } finally {
+      setCompleting(false);
+    }
+  };
 
   const getAvatarFallback = (name?: string) => {
     if (!name) {
@@ -85,18 +139,51 @@ export function GoalCard({
       <CardContent className="space-y-5">
         {/* Progress Section */}
         {totalTasks > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium text-muted-foreground">Progress</span>
+              <span className="font-medium text-muted-foreground">Team Progress</span>
               <span className="font-semibold text-foreground">
-                {completedTasks}
+                {completedTeamTasks}
                 /
                 {totalTasks}
                 {' '}
                 tasks
               </span>
             </div>
-            <Progress value={progressPercentage} className="h-2" />
+            {/* Stacked progress bar: personal (green) on top of team (blue) */}
+            <div className="relative h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+              {/* Team progress bar */}
+              <div
+                className="absolute top-0 left-0 h-full bg-blue-500 transition-all duration-300"
+                style={{ width: `${overallProgressPercentage}%` }}
+              />
+              {/* Personal progress bar (overlaid) */}
+              <div
+                className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
+                style={{ width: `${personalProgressPercentage}%` }}
+              />
+            </div>
+            {/* Legend */}
+            <div className="flex gap-3 text-xs">
+              <div className="flex items-center gap-1.5">
+                <div className="h-2 w-2 rounded-full bg-green-500" />
+                <span className="text-muted-foreground">Your tasks</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="h-2 w-2 rounded-full bg-blue-500" />
+                <span className="text-muted-foreground">Team progress</span>
+              </div>
+            </div>
+            {/* Personal progress info */}
+            {completedPersonalTasks > 0 && (
+              <p className="text-xs text-muted-foreground">
+                You've completed
+                {' '}
+                <span className="font-semibold text-foreground">{completedPersonalTasks}</span>
+                {' '}
+                of your assigned tasks
+              </p>
+            )}
           </div>
         )}
 
@@ -107,8 +194,30 @@ export function GoalCard({
             <div className="space-y-1.5">
               {goal.tasks.map(task => (
                 <div key={task.id} className="flex items-start gap-2 text-sm">
-                  <IconCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                  <span className="text-foreground">{task.name}</span>
+                  <IconCircle
+                    className={`mt-0.5 h-4 w-4 shrink-0 ${
+                      task.completed
+                        ? task.isPersonal
+                          ? 'text-green-600 dark:text-green-400'
+                          : 'text-blue-600 dark:text-blue-400'
+                        : 'text-muted-foreground'
+                    }`}
+                  />
+                  <span className={`flex-1 ${task.completed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+                    {task.name}
+                  </span>
+                  {/* Assignees avatars */}
+                  {task.assignees && task.assignees.length > 0 && (
+                    <div className="ml-auto flex -space-x-2">
+                      {task.assignees.map(assignee => (
+                        <Avatar key={assignee.id} className="h-5 w-5 border border-background">
+                          <AvatarFallback className="text-xs">
+                            {getInitials(assignee.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -117,19 +226,50 @@ export function GoalCard({
 
         {/* Footer Section */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
-          {/* Assignee */}
-          {goal.assigneeName && (
-            <div className="flex items-center gap-2">
-              <Avatar className="h-8 w-8 border-2 border-background">
-                <AvatarFallback className="text-xs font-medium">
-                  {getAvatarFallback(goal.assigneeName)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col">
-                <span className="text-xs font-medium text-foreground">{goal.assigneeName}</span>
+          {/* Assignees */}
+          {goal.assignees && goal.assignees.length > 0
+            ? (
+                <TooltipProvider>
+                  <div className="flex items-center gap-2">
+                    <div className="flex -space-x-2">
+                      {goal.assignees.map(assignee => (
+                        <Tooltip key={assignee.id}>
+                          <TooltipTrigger asChild>
+                            <Avatar className="h-8 w-8 cursor-pointer border-2 border-background">
+                              <AvatarFallback className="text-xs font-medium">
+                                {getInitials(assignee.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {assignee.name}
+                          </TooltipContent>
+                        </Tooltip>
+                      ))}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-medium text-foreground">
+                        {goal.assignees.length}
+                        {' '}
+                        assignee
+                        {goal.assignees.length === 1 ? '' : 's'}
+                      </span>
+                    </div>
+                  </div>
+                </TooltipProvider>
+              )
+            : goal.assigneeName && (
+              <div className="flex items-center gap-2">
+                <Avatar className="h-8 w-8 border-2 border-background">
+                  <AvatarFallback className="text-xs font-medium">
+                    {getAvatarFallback(goal.assigneeName)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <span className="text-xs font-medium text-foreground">{goal.assigneeName}</span>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           <div className="ml-auto flex items-center gap-3">
             {/* Due Date */}
@@ -162,6 +302,27 @@ export function GoalCard({
             >
               <IconTrash size={16} />
             </Button>
+
+            {/* Complete Button - shown when all tasks are completed and goal is not already completed */}
+            {allTasksCompleted && goal.status !== 'completed' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+                onClick={handleComplete}
+                disabled={completing}
+              >
+                <IconCheck size={16} />
+              </Button>
+            )}
+
+            {/* Completed Badge - shown when goal is already completed */}
+            {goal.status === 'completed' && (
+              <div className="flex items-center gap-1.5 rounded-full bg-green-50 px-2 py-1 dark:bg-green-950">
+                <IconCheck size={14} className="text-green-600 dark:text-green-400" />
+                <span className="text-xs font-medium text-green-600 dark:text-green-400">Completed</span>
+              </div>
+            )}
 
             {/* Edit Button */}
             <Button

@@ -2,6 +2,7 @@ import type { ReadonlyURLSearchParams } from 'next/navigation';
 
 export const PROTECTED_ROUTES = [
   '/dashboard',
+  '/leaderboard',
   // Add more as you add to middleware matcher
 ] as const;
 
