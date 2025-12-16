@@ -67,7 +67,11 @@ export async function updateTaskStatus(taskId: string, status: Status) {
     // Update task status and score
     await db
       .update(taskTable)
-      .set({ status, score })
+      .set({
+        status,
+        updatedAt: new Date(),
+        score,
+      })
       .where(eq(taskTable.id, taskId));
 
     // Handle point transactions based on status change
