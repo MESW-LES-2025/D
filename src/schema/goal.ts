@@ -1,18 +1,16 @@
 import { integer, pgEnum, pgTable, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { organizationTable } from './organization';
+import { taskTable } from './task';
 import { userTable } from './user';
 
 export const goalStatusEnum = pgEnum('goal_status', ['active', 'paused', 'completed', 'archived']);
 
 export const goalTable = pgTable('goals', {
   id: uuid('id').defaultRandom().primaryKey(),
-  groupId: text('group_id'),
-  userId: text('user_id').references(() => userTable.id, { onDelete: 'set null' }),
-  assigneeId: text('assignee_id').references(() => userTable.id, { onDelete: 'set null' }),
-  createdById: text('created_by_id').references(() => userTable.id, { onDelete: 'set null' }),
+  organizationId: text('organization_id').references(() => organizationTable.id, { onDelete: 'set null' }),
+  creatorId: text('creator_id').references(() => userTable.id, { onDelete: 'set null' }),
   name: text('name').notNull(),
   description: text('description'),
-  target: text('target'),
-  reward: text('reward'),
   status: goalStatusEnum('status').default('active').notNull(),
   points: integer('points').default(0).notNull(),
   dueDate: timestamp('due_date', { mode: 'date' }),
@@ -22,12 +20,20 @@ export const goalTable = pgTable('goals', {
     .$onUpdate(() => new Date())
     .notNull(),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  removedAt: timestamp('removed_at', { mode: 'date' }),
 });
 
-export const goalTasksTable = pgTable('goal_tasks', {
-  goalId: uuid('goal_id').notNull(),
-  taskId: uuid('task_id').notNull(),
-}, table => [
-  primaryKey({ columns: [table.goalId, table.taskId] }),
-]);
+export const goalTasksTable = pgTable(
+  'goal_tasks',
+  {
+    goalId: uuid('goal_id')
+      .references(() => goalTable.id, { onDelete: 'cascade' })
+      .notNull(),
+
+    taskId: uuid('task_id')
+      .references(() => taskTable.id, { onDelete: 'cascade' })
+      .notNull(),
+  },
+  table => ([
+    primaryKey({ columns: [table.goalId, table.taskId] }),
+  ]),
+);
