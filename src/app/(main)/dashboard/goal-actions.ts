@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { goalTable, goalTasksTable } from '@/schema/goal';
+import { goalAssigneesTable } from '@/schema/goal_assignees';
 
 export async function createGoal(data: {
   title: string;
@@ -41,15 +42,27 @@ export async function createGoal(data: {
     }
     if (data.dueDate) {
       values.dueDate = new Date(data.dueDate);
-    }
-    if (data.assigneeIds && data.assigneeIds.length > 0) {
-      values.assigneeId = data.assigneeIds[0];
+    } else {
+      values.dueDate = null;
     }
 
     const [created] = await db
       .insert(goalTable)
       .values(values)
       .returning();
+
+    // persist assignees
+    if (created && created.id && data.assigneeIds && Array.isArray(data.assigneeIds) && data.assigneeIds.length > 0) {
+      const assigneeRows = data.assigneeIds.map((userId: string) => ({
+        goalId: created.id,
+        userId,
+      }));
+      try {
+        await db.insert(goalAssigneesTable).values(assigneeRows);
+      } catch (e) {
+        console.error('Failed to save goal-assignee associations', e);
+      }
+    }
 
     // persist task associations
     if (created && created.id && data.taskIds && Array.isArray(data.taskIds) && data.taskIds.length > 0) {
@@ -62,6 +75,7 @@ export async function createGoal(data: {
     }
 
     revalidatePath('/dashboard');
+    revalidatePath('/goals');
 
     return { success: true, data: created };
   } catch (e) {

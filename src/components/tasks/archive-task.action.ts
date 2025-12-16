@@ -16,6 +16,7 @@ export async function archiveTask(taskId: string) {
       .where(eq(taskTable.id, taskId));
 
     revalidatePath('/tasks');
+    revalidatePath('/goals');
 
     return { success: true };
   } catch (error) {

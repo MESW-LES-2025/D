@@ -21,6 +21,7 @@ export async function updateTaskDescriptor(taskId: string, title: string, descri
       .where(eq(taskTable.id, taskId));
 
     revalidatePath('/tasks');
+    revalidatePath('/goals');
     return { success: true };
   } catch (error) {
     console.error('Failed to update task status:', error);

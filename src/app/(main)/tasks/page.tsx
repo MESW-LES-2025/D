@@ -26,7 +26,12 @@ export const metadata: Metadata = {
   description: 'A task and issue tracker build using Tanstack Table.',
 };
 
-export default async function TaskPage() {
+type Props = {
+  searchParams: Promise<{ taskId?: string }>;
+};
+
+export default async function TaskPage({ searchParams }: Props) {
+  const params = await searchParams;
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -107,9 +112,9 @@ export default async function TaskPage() {
         <TabsContent value="table">
           {isAdmin
             ? (
-                <AdminDataTable data={tasks} columns={adminColumns} isAdmin={isAdmin} />
+                <AdminDataTable data={tasks} columns={adminColumns} isAdmin={isAdmin} autoOpenTaskId={params.taskId} />
               )
-            : <DataTable data={tasks} columns={columns} isAdmin={isAdmin} />}
+            : <DataTable data={tasks} columns={columns} isAdmin={isAdmin} autoOpenTaskId={params.taskId} />}
         </TabsContent>
         <TabsContent value="board">
           <div>Kanban Board coming soon...</div>
