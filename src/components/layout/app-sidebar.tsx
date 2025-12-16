@@ -32,6 +32,11 @@ const data = {
       icon: IconListCheck,
     },
     {
+      title: 'Achievements',
+      url: 'achievements',
+      icon: IconTrophy,
+    },
+    {
       title: 'Team',
       url: 'team',
       icon: IconUserShare,

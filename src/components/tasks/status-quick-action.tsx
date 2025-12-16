@@ -34,6 +34,11 @@ export function StatusQuickAction({ status, taskId, showHidden = false }: Status
   const handleStatusChange = (newStatus: Status) => {
     startTransition(async () => {
       setOptimisticStatus(newStatus);
+
+      // Get the previously unlocked achievements before the status change
+      const previouslyUnlockedStr = localStorage.getItem('unlockedAchievements');
+      const previouslyUnlocked = previouslyUnlockedStr ? JSON.parse(previouslyUnlockedStr) : [];
+
       const result = await updateTaskStatus(taskId, newStatus);
 
       if (result.error) {
@@ -60,6 +65,22 @@ export function StatusQuickAction({ status, taskId, showHidden = false }: Status
         toast.success(`${randomMessage}${pointsText}`);
       } else {
         toast.success('Status updated successfully!');
+      }
+
+      // Show achievement toasts only for newly unlocked achievements
+      if (result.newlyUnlocked && result.newlyUnlocked.length > 0) {
+        // Find achievements that weren't unlocked before
+        result.newlyUnlocked.forEach((achievement) => {
+          if (!previouslyUnlocked.includes(achievement.id)) {
+            toast.success(`🏆 Achievement Unlocked: ${achievement.name}!`, {
+              duration: 5000,
+            });
+          }
+        });
+
+        // Update localStorage with currently unlocked achievement IDs
+        const currentlyUnlockedIds = result.newlyUnlocked.map(a => a.id);
+        localStorage.setItem('unlockedAchievements', JSON.stringify(currentlyUnlockedIds));
       }
     });
   };

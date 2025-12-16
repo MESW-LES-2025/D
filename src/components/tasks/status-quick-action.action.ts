@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { revertGoalCompletion } from '@/app/(main)/dashboard/revert-goal-completion-actions';
 
+import { checkAllAchievements } from '@/lib/achievements/achievement-checkers';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { calculateTaskPoints } from '@/lib/utils/calculateTaskPoints';
@@ -15,7 +16,7 @@ import {
 } from '@/lib/utils/pointTransactionHelpers';
 import { goalTable } from '@/schema/goal';
 import { goalTasksTable } from '@/schema/goal_tasks';
-import { taskAssigneesTable, taskTable } from '@/schema/task';
+import { taskAssigneesTable, taskLogTable, taskTable } from '@/schema/task';
 
 export async function updateTaskStatus(taskId: string, status: Status) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -74,6 +75,15 @@ export async function updateTaskStatus(taskId: string, status: Status) {
       })
       .where(eq(taskTable.id, taskId));
 
+    // Log the status change
+    await db
+      .insert(taskLogTable)
+      .values({
+        taskId,
+        userId: session.user?.id,
+        action: 'status_changed',
+      });
+
     // Handle point transactions based on status change
     const isBecomingDone = status === 'done' && oldStatus !== 'done';
     const isBecomingNotDone = status !== 'done' && oldStatus === 'done';
@@ -128,7 +138,11 @@ export async function updateTaskStatus(taskId: string, status: Status) {
     revalidatePath('/tasks');
     revalidatePath('/goals');
     revalidatePath('/');
-    return { success: true, score, assigneeCount: assignees.length };
+
+    const achievements = await checkAllAchievements(session.user?.id || '');
+    const newlyUnlocked = achievements.filter(a => a.unlocked);
+
+    return { success: true, score, assigneeCount: assignees.length, newlyUnlocked };
   } catch (error) {
     console.error('Failed to update task status:', error);
     return { error: 'Failed to update task status' };
