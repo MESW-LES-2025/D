@@ -41,6 +41,11 @@ const data = {
       url: 'team',
       icon: IconUserShare,
     },
+    {
+      title: 'Leaderboard',
+      url: 'leaderboard',
+      icon: IconTrophy,
+    },
   ],
   navSecondary: [
     {

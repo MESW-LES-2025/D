@@ -41,6 +41,7 @@ export async function assignUserToTask(taskId: string, userId: string) {
     // They only earn points if assigned when the task was completed
 
     revalidatePath('/tasks');
+    revalidatePath('/goals');
     revalidatePath('/');
 
     return { success: true };

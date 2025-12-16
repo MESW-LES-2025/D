@@ -53,7 +53,15 @@ export function StatusQuickAction({ status, taskId, showHidden = false }: Status
           'Done! Great work!',
         ];
         const randomMessage = completionMessages[Math.floor(Math.random() * completionMessages.length)];
-        const pointsText = result.score ? ` +${result.score} points` : '';
+        let pointsText = '';
+        if (result.score && result.score > 0) {
+          if (result.assigneeCount && result.assigneeCount > 1) {
+            const pointsPerAssignee = Math.round(result.score / result.assigneeCount);
+            pointsText = ` +${pointsPerAssignee} pts each (${result.score} total)`;
+          } else {
+            pointsText = ` +${result.score} points`;
+          }
+        }
         toast.success(`${randomMessage}${pointsText}`);
       } else {
         toast.success('Status updated successfully!');

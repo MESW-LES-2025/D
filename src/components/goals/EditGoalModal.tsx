@@ -6,6 +6,7 @@ import { IconCheck, IconSelector } from '@tabler/icons-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -36,7 +37,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 import { TeamGoalValidation } from '@/validations/TeamGoalValidation';
 
 type FormData = z.infer<typeof TeamGoalValidation>;
@@ -45,6 +46,12 @@ type Member = {
   id: string;
   name: string;
   email: string;
+};
+
+type Task = {
+  id: string;
+  name: string;
+  assignees?: Array<{ id: string; name: string }>;
 };
 
 type Props = {
@@ -59,14 +66,15 @@ type Props = {
     points?: number;
     assigneeId?: string;
     assigneeName?: string;
+    assignees?: Array<{ id: string; name: string; email: string }>;
     tasks?: { id: string; name: string }[];
   };
-  tasks?: { id: string; name: string }[];
+  tasks?: Task[];
   members?: Member[];
 };
 
 const defaultMembers: Member[] = [];
-const defaultTasks: { id: string; name: string }[] = [];
+const defaultTasks: Task[] = [];
 
 export function EditGoalModal({
   open,
@@ -86,7 +94,7 @@ export function EditGoalModal({
       pointsReward: goal.points?.toString() || '',
       description: goal.description || '',
       dueDate: goal.dueDate ? new Date(goal.dueDate).toISOString().split('T')[0] : '',
-      assigneeIds: goal.assigneeId ? [goal.assigneeId] : [],
+      assigneeIds: goal.assignees?.map(a => a.id) || (goal.assigneeId ? [goal.assigneeId] : []),
       taskIds: goal.tasks?.map(t => t.id) || [],
     },
   });
@@ -164,9 +172,22 @@ export function EditGoalModal({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Due Date (optional)</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
+                      <div className="flex gap-2">
+                        <FormControl className="flex-1">
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        {field.value && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => field.onChange('')}
+                            className="px-2"
+                          >
+                            Clear
+                          </Button>
+                        )}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -187,7 +208,7 @@ export function EditGoalModal({
                   )}
                 />
 
-                {/* --- Assignees --- */}
+                {/* --- Assignee --- */}
                 <FormField
                   control={form.control}
                   name="assigneeIds"
@@ -208,7 +229,7 @@ export function EditGoalModal({
                                     )}
                                   >
                                     {selectedAssignees.length > 0
-                                      ? `${selectedAssignees.length} member${selectedAssignees.length > 1 ? 's' : ''} selected`
+                                      ? `${selectedAssignees.length} member${selectedAssignees.length === 1 ? '' : 's'} selected`
                                       : 'Select members...'}
                                     <IconSelector className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                   </Button>
@@ -226,10 +247,11 @@ export function EditGoalModal({
                                           key={member.id}
                                           value={`${member.name} ${member.email}`}
                                           onSelect={() => {
-                                            const newValue = isSelected
+                                            // Multi-select - toggle selection
+                                            const newSelection = isSelected
                                               ? selectedAssigneeIds.filter(id => id !== member.id)
                                               : [...selectedAssigneeIds, member.id];
-                                            field.onChange(newValue);
+                                            field.onChange(newSelection);
                                           }}
                                         >
                                           <IconCheck
@@ -275,22 +297,56 @@ export function EditGoalModal({
                             : (
                                 tasks.map((task) => {
                                   const isChecked = (field.value || []).includes(task.id);
+                                  const taskAssigneeIds = task.assignees?.map(a => a.id) || [];
+                                  // Check if any goal assignee is included in task assignees
+                                  const goalAssigneeIds = selectedAssigneeIds || [];
+                                  const isTaskCompatible = goalAssigneeIds.length === 0 || goalAssigneeIds.some(id => taskAssigneeIds.includes(id));
+
                                   return (
-                                    <label key={task.id} className="flex cursor-pointer items-center gap-2 rounded p-2 transition-colors hover:bg-accent">
-                                      <input
-                                        type="checkbox"
-                                        value={task.id}
-                                        checked={isChecked}
-                                        onChange={(e) => {
-                                          const checked = e.target.checked;
-                                          const current = field.value || [];
-                                          const next = checked ? [...current, task.id] : current.filter((id: string) => id !== task.id);
-                                          field.onChange(next);
-                                        }}
-                                        className="cursor-pointer"
-                                      />
-                                      <span className="line-clamp-2 text-sm">{task.name}</span>
-                                    </label>
+                                    <div key={task.id} className="flex flex-col gap-1.5">
+                                      <label className={`flex cursor-pointer items-center gap-2 rounded p-2 transition-colors hover:bg-accent ${
+                                        !isTaskCompatible && isChecked ? 'bg-yellow-50 dark:bg-yellow-950' : ''
+                                      }`}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          value={task.id}
+                                          checked={isChecked}
+                                          onChange={(e) => {
+                                            const checked = e.target.checked;
+                                            const current = field.value || [];
+                                            const next = checked ? [...current, task.id] : current.filter((id: string) => id !== task.id);
+                                            field.onChange(next);
+                                          }}
+                                          className="cursor-pointer"
+                                        />
+                                        <span className="line-clamp-2 flex-1 text-sm">{task.name}</span>
+                                      </label>
+                                      {/* Task Assignees */}
+                                      {task.assignees && task.assignees.length > 0 && (
+                                        <div className="ml-6 flex flex-col gap-1">
+                                          <div className="flex items-center gap-1">
+                                            {task.assignees.map(assignee => (
+                                              <Avatar
+                                                key={assignee.id}
+                                                className={`h-5 w-5 border border-background ${
+                                                  goalAssigneeIds.includes(assignee.id) ? 'ring-2 ring-green-500' : ''
+                                                }`}
+                                              >
+                                                <AvatarFallback className="text-xs">
+                                                  {getInitials(assignee.name)}
+                                                </AvatarFallback>
+                                              </Avatar>
+                                            ))}
+                                          </div>
+                                          {isChecked && !isTaskCompatible && (
+                                            <span className="text-xs text-yellow-700 dark:text-yellow-400">
+                                              ⚠ No goal members are assigned to this task
+                                            </span>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
                                   );
                                 })
                               )}

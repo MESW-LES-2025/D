@@ -1,12 +1,14 @@
 'use server';
 
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { goalTable } from '@/schema/goal';
+import { goalAssigneesTable } from '@/schema/goal_assignees';
 import { goalTasksTable } from '@/schema/goal_tasks';
+import { taskAssigneesTable } from '@/schema/task';
 
 export async function updateGoal(
   goalId: string,
@@ -44,9 +46,8 @@ export async function updateGoal(
     }
     if (data.dueDate) {
       updates.dueDate = new Date(data.dueDate);
-    }
-    if (data.assigneeIds && data.assigneeIds.length > 0) {
-      updates.assigneeId = data.assigneeIds[0];
+    } else {
+      updates.dueDate = null;
     }
 
     const [updated] = await db
@@ -55,8 +56,51 @@ export async function updateGoal(
       .where(eq(goalTable.id, goalId))
       .returning();
 
+    // Update assignees - delete old ones and insert new ones
+    if (data.assigneeIds && Array.isArray(data.assigneeIds)) {
+      // Delete existing assignees for this goal
+      await db.delete(goalAssigneesTable).where(eq(goalAssigneesTable.goalId, goalId));
+
+      // Insert new assignees
+      if (data.assigneeIds.length > 0) {
+        const assigneeRows = data.assigneeIds.map((userId: string) => ({
+          goalId,
+          userId,
+        }));
+        await db.insert(goalAssigneesTable).values(assigneeRows);
+      }
+    }
+
     // Update task associations - delete old ones and insert new ones
     if (data.taskIds && Array.isArray(data.taskIds)) {
+      // If there are goal assignees, validate that for each task, at least one goal assignee is assigned
+      if (data.assigneeIds && data.assigneeIds.length > 0 && data.taskIds.length > 0) {
+        const taskAssignments = await db
+          .select({
+            taskId: taskAssigneesTable.taskId,
+            userId: taskAssigneesTable.userId,
+          })
+          .from(taskAssigneesTable)
+          .where(inArray(taskAssigneesTable.taskId, data.taskIds));
+
+        // For each task, check if at least one goal assignee is assigned to it
+        for (const taskId of data.taskIds) {
+          const taskAssigneeIds = new Set(
+            taskAssignments
+              .filter(ta => ta.taskId === taskId)
+              .map(ta => ta.userId),
+          );
+
+          const hasCompatibleAssignee = data.assigneeIds.some((id: string) => taskAssigneeIds.has(id));
+
+          if (!hasCompatibleAssignee) {
+            return {
+              error: `No goal member is assigned to this task. Please ensure at least one goal member is assigned to every task.`,
+            };
+          }
+        }
+      }
+
       // Delete all existing associations for this goal
       await db.delete(goalTasksTable).where(eq(goalTasksTable.goalId, goalId));
 
@@ -68,6 +112,7 @@ export async function updateGoal(
     }
 
     revalidatePath('/dashboard');
+    revalidatePath('/goals');
 
     return { success: true, data: updated };
   } catch (e) {
