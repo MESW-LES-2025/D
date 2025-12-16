@@ -4,7 +4,8 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { goalTable, goalTasksTable } from '@/schema/goal';
-import { taskTable } from '@/schema/task';
+import { goalAssigneesTable } from '@/schema/goal_assignees';
+import { taskAssigneesTable, taskTable } from '@/schema/task';
 import { userTable } from '@/schema/user';
 
 export async function GET() {

@@ -14,8 +14,7 @@ import {
   awardPointsToAssignees,
   deductPointsFromAssignees,
 } from '@/lib/utils/pointTransactionHelpers';
-import { goalTable } from '@/schema/goal';
-import { goalTasksTable } from '@/schema/goal_tasks';
+import { goalTable, goalTasksTable } from '@/schema/goal';
 import { taskAssigneesTable, taskLogTable, taskTable } from '@/schema/task';
 
 export async function updateTaskStatus(taskId: string, status: Status) {

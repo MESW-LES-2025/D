@@ -5,7 +5,9 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
+import { taskAssigneesTable } from '@/schema';
 import { goalTable, goalTasksTable } from '@/schema/goal';
+import { goalAssigneesTable } from '@/schema/goal_assignees';
 
 export async function updateGoal(
   goalId: string,

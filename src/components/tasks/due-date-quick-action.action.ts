@@ -8,7 +8,7 @@ import { db } from '@/lib/db';
 import { createDeadlineUpdateNotification } from '@/lib/notification/notification-helpers';
 import { calculateTaskPoints } from '@/lib/utils/calculateTaskPoints';
 import { adjustPointsForPropertyChange } from '@/lib/utils/pointTransactionHelpers';
-import { taskTable } from '@/schema/task';
+import { taskAssigneesTable, taskTable } from '@/schema/task';
 
 export async function updateTaskDueDate(taskId: string, dueDate: Date) {
   const session = await auth.api.getSession({ headers: await headers() });
