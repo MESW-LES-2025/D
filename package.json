@@ -84,6 +84,7 @@
     "@types/node": "^24.6.1",
     "@types/pg": "^8.15.5",
     "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.0.4",
     "@vitest/browser": "^4.0.14",
     "@vitest/coverage-v8": "^4.0.14",

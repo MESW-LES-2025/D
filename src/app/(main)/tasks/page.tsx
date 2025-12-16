@@ -1,20 +1,10 @@
 import type { Metadata } from 'next';
 
 import type { Status, TaskWithAssignees } from '@/lib/task/task-types';
-import { IconLayoutKanban, IconList } from '@tabler/icons-react';
 import { and, eq, inArray } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { columns as adminColumns } from '@/components/tasks/admin-table/columns';
-import { DataTable as AdminDataTable } from '@/components/tasks/admin-table/data-table';
-import { columns } from '@/components/tasks/table/columns';
-import { DataTable } from '@/components/tasks/table/data-table';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
+import { TasksTabs } from '@/components/tasks/tasks-tabs';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { allStatuses, statuses } from '@/lib/task/task-options';
@@ -98,28 +88,12 @@ export default async function TaskPage({ searchParams }: Props) {
           </p>
         </div>
       </div>
-      <Tabs defaultValue="table" className="flex w-full gap-8">
-        <TabsList className="h-10">
-          <TabsTrigger value="table" className="p-4">
-            <IconList className="size-5" />
-            Table
-          </TabsTrigger>
-          <TabsTrigger value="board" className="p-4">
-            <IconLayoutKanban className="size-5" />
-            Board
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="table">
-          {isAdmin
-            ? (
-                <AdminDataTable data={tasks} columns={adminColumns} isAdmin={isAdmin} autoOpenTaskId={params.taskId} />
-              )
-            : <DataTable data={tasks} columns={columns} isAdmin={isAdmin} autoOpenTaskId={params.taskId} />}
-        </TabsContent>
-        <TabsContent value="board">
-          <div>Kanban Board coming soon...</div>
-        </TabsContent>
-      </Tabs>
+      <TasksTabs
+        tasks={tasks}
+        isAdmin={isAdmin}
+        taskId={params.taskId}
+        currentUserId={session.user?.id}
+      />
     </div>
   );
 }
