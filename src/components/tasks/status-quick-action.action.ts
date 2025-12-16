@@ -1,9 +1,11 @@
 'use server';
 
 import type { Status } from '@/lib/task/task-types';
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
+import { revertGoalCompletion } from '@/app/(main)/dashboard/revert-goal-completion-actions';
+
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { calculateTaskPoints } from '@/lib/utils/calculateTaskPoints';
@@ -11,6 +13,8 @@ import {
   awardPointsToAssignees,
   deductPointsFromAssignees,
 } from '@/lib/utils/pointTransactionHelpers';
+import { goalTable } from '@/schema/goal';
+import { goalTasksTable } from '@/schema/goal_tasks';
 import { taskAssigneesTable, taskTable } from '@/schema/task';
 
 export async function updateTaskStatus(taskId: string, status: Status) {
@@ -26,7 +30,7 @@ export async function updateTaskStatus(taskId: string, status: Status) {
   }
 
   try {
-    // Fetch the task with current status and assignee count
+    // Fetch the task with current status
     const [task] = await db
       .select({
         id: taskTable.id,
@@ -36,20 +40,9 @@ export async function updateTaskStatus(taskId: string, status: Status) {
         priority: taskTable.priority,
         dueDate: taskTable.dueDate,
         score: taskTable.score,
-        assigneeCount: sql<number>`cast(count(distinct ${taskAssigneesTable.userId}) as integer)`.as('assignee_count'),
       })
       .from(taskTable)
-      .leftJoin(taskAssigneesTable, eq(taskTable.id, taskAssigneesTable.taskId))
       .where(eq(taskTable.id, taskId))
-      .groupBy(
-        taskTable.id,
-        taskTable.title,
-        taskTable.status,
-        taskTable.difficulty,
-        taskTable.priority,
-        taskTable.dueDate,
-        taskTable.score,
-      )
       .limit(1);
 
     if (!task) {
@@ -58,11 +51,16 @@ export async function updateTaskStatus(taskId: string, status: Status) {
 
     const oldStatus = task.status;
 
+    // Get assignee count for the response
+    const assignees = await db
+      .select({ userId: taskAssigneesTable.userId })
+      .from(taskAssigneesTable)
+      .where(eq(taskAssigneesTable.taskId, taskId));
+
     const score = await calculateTaskPoints(
       task.priority,
       task.difficulty,
       task.dueDate,
-      task.assigneeCount ?? 0,
       status,
     );
 
@@ -112,11 +110,25 @@ export async function updateTaskStatus(taskId: string, status: Status) {
           newStatus: status,
         },
       );
+
+      // Check if this task is part of a completed goal - if so, revert the goal
+      const goalsContainingTask = await db
+        .select({ id: goalTable.id })
+        .from(goalTasksTable)
+        .innerJoin(goalTable, eq(goalTasksTable.goalId, goalTable.id))
+        .where(eq(goalTasksTable.taskId, taskId));
+
+      for (const goal of goalsContainingTask) {
+        if (goal.id) {
+          await revertGoalCompletion(goal.id);
+        }
+      }
     }
 
     revalidatePath('/tasks');
+    revalidatePath('/goals');
     revalidatePath('/');
-    return { success: true, score };
+    return { success: true, score, assigneeCount: assignees.length };
   } catch (error) {
     console.error('Failed to update task status:', error);
     return { error: 'Failed to update task status' };

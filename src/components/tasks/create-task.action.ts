@@ -65,6 +65,7 @@ export async function createTask(input: CreateTaskInput, organizationId: string)
 
     // Revalidate the tasks page
     revalidatePath('/tasks');
+    revalidatePath('/goals');
 
     return { success: true, task };
   } catch (error) {

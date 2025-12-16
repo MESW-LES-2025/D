@@ -1,14 +1,15 @@
 'use server';
 
 import type { Difficulty } from '@/lib/task/task-types';
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { calculateTaskPoints } from '@/lib/utils/calculateTaskPoints';
 import { adjustPointsForPropertyChange } from '@/lib/utils/pointTransactionHelpers';
-import { taskAssigneesTable, taskTable } from '@/schema/task';
+import { taskTable } from '@/schema';
+// import { taskAssigneesTable, taskTable } from '@/schema/task';
 
 type TaskWithStatus = {
   id: string;
@@ -32,7 +33,7 @@ export async function updateTaskDifficulty(taskId: string, difficulty: Difficult
   try {
     // If task is done, recalculate score with new difficulty
     if (task.status === 'done') {
-      // Fetch full task data including priority and assignee count
+      // Fetch full task data including priority
       const [fullTask] = await db
         .select({
           id: taskTable.id,
@@ -40,12 +41,9 @@ export async function updateTaskDifficulty(taskId: string, difficulty: Difficult
           priority: taskTable.priority,
           difficulty: taskTable.difficulty,
           dueDate: taskTable.dueDate,
-          assigneeCount: sql<number>`cast(count(distinct ${taskAssigneesTable.userId}) as integer)`.as('assignee_count'),
         })
         .from(taskTable)
-        .leftJoin(taskAssigneesTable, eq(taskTable.id, taskAssigneesTable.taskId))
         .where(eq(taskTable.id, taskId))
-        .groupBy(taskTable.id, taskTable.title, taskTable.priority, taskTable.difficulty, taskTable.dueDate)
         .limit(1);
 
       if (!fullTask) {
@@ -57,7 +55,6 @@ export async function updateTaskDifficulty(taskId: string, difficulty: Difficult
         fullTask.priority,
         difficulty,
         fullTask.dueDate,
-        fullTask.assigneeCount ?? 0,
         'done',
       );
 
@@ -93,6 +90,7 @@ export async function updateTaskDifficulty(taskId: string, difficulty: Difficult
     }
 
     revalidatePath('/tasks');
+    revalidatePath('/goals');
     revalidatePath('/');
     return { success: true };
   } catch (error) {

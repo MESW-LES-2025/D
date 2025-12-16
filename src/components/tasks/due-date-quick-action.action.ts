@@ -1,13 +1,13 @@
 'use server';
 
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { calculateTaskPoints } from '@/lib/utils/calculateTaskPoints';
 import { adjustPointsForPropertyChange } from '@/lib/utils/pointTransactionHelpers';
-import { taskAssigneesTable, taskTable } from '@/schema/task';
+import { taskTable } from '@/schema/task';
 
 export async function updateTaskDueDate(taskId: string, dueDate: Date) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -32,12 +32,9 @@ export async function updateTaskDueDate(taskId: string, dueDate: Date) {
         difficulty: taskTable.difficulty,
         dueDate: taskTable.dueDate,
         score: taskTable.score,
-        assigneeCount: sql<number>`cast(count(distinct ${taskAssigneesTable.userId}) as integer)`.as('assignee_count'),
       })
       .from(taskTable)
-      .leftJoin(taskAssigneesTable, eq(taskTable.id, taskAssigneesTable.taskId))
       .where(eq(taskTable.id, taskId))
-      .groupBy(taskTable.id, taskTable.title, taskTable.status, taskTable.priority, taskTable.difficulty, taskTable.dueDate, taskTable.score)
       .limit(1);
 
     if (!task) {
@@ -51,7 +48,6 @@ export async function updateTaskDueDate(taskId: string, dueDate: Date) {
         task.priority,
         task.difficulty,
         dueDate,
-        task.assigneeCount ?? 0,
         'done',
       );
 
@@ -87,6 +83,7 @@ export async function updateTaskDueDate(taskId: string, dueDate: Date) {
     }
 
     revalidatePath('/tasks');
+    revalidatePath('/goals');
     revalidatePath('/');
     return { success: true };
   } catch (error) {
