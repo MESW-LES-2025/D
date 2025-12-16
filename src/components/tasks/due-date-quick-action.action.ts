@@ -5,9 +5,10 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
+import { createDeadlineUpdateNotification } from '@/lib/notification/notification-helpers';
 import { calculateTaskPoints } from '@/lib/utils/calculateTaskPoints';
 import { adjustPointsForPropertyChange } from '@/lib/utils/pointTransactionHelpers';
-import { taskTable } from '@/schema/task';
+import { taskAssigneesTable, taskTable } from '@/schema/task';
 
 export async function updateTaskDueDate(taskId: string, dueDate: Date) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -81,6 +82,25 @@ export async function updateTaskDueDate(taskId: string, dueDate: Date) {
         .set({ dueDate })
         .where(eq(taskTable.id, taskId));
     }
+
+    // Get all assignees for the task
+    const assignees = await db
+      .select({ userId: taskAssigneesTable.userId })
+      .from(taskAssigneesTable)
+      .where(eq(taskAssigneesTable.taskId, taskId));
+
+    // Create notifications for each assignee
+    await Promise.all(
+      assignees.map(assignee =>
+        createDeadlineUpdateNotification(
+          assignee.userId,
+          taskId,
+          task.title,
+          dueDate.toISOString(),
+          task.dueDate?.toISOString(),
+        ),
+      ),
+    );
 
     revalidatePath('/tasks');
     revalidatePath('/goals');

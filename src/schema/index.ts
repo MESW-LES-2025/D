@@ -9,7 +9,7 @@
  */
 
 export * from './goal';
-export * from './goal_assignees';
+export * from './notification';
 export * from './organization';
 export * from './points';
 export * from './task';

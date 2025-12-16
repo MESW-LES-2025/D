@@ -3,9 +3,8 @@ import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
-import { goalTable } from '@/schema/goal';
+import { goalTable, goalTasksTable } from '@/schema/goal';
 import { goalAssigneesTable } from '@/schema/goal_assignees';
-import { goalTasksTable } from '@/schema/goal_tasks';
 import { taskAssigneesTable, taskTable } from '@/schema/task';
 import { userTable } from '@/schema/user';
 

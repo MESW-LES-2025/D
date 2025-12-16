@@ -1,4 +1,4 @@
-import { integer, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { integer, pgEnum, pgTable, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { userTable } from './user';
 
 export const goalStatusEnum = pgEnum('goal_status', ['active', 'paused', 'completed', 'archived']);
@@ -24,3 +24,10 @@ export const goalTable = pgTable('goals', {
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   removedAt: timestamp('removed_at', { mode: 'date' }),
 });
+
+export const goalTasksTable = pgTable('goal_tasks', {
+  goalId: uuid('goal_id').notNull(),
+  taskId: uuid('task_id').notNull(),
+}, table => [
+  primaryKey({ columns: [table.goalId, table.taskId] }),
+]);
