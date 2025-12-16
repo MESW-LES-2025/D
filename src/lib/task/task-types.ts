@@ -24,16 +24,19 @@ export type StatusOption = {
   value: string;
   label: string;
   icon: Icon;
+  color: string;
 };
 
 export type PriorityOption = {
   value: string;
   label: string;
   icon: Icon;
+  color: string;
 };
 
 export type DifficultyOption = {
   value: string;
   label: string;
   icon: Icon;
+  colors?: { background: string; foreground: string };
 };
