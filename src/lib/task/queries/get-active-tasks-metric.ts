@@ -1,4 +1,4 @@
-import type { ActiveTasksMetric } from '@/lib/task/types/date-range';
+import type { ActiveTasksMetric } from '@/lib/task/types/metrics';
 import { and, count, eq, inArray } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { taskTable } from '@/schema/task';

@@ -1,4 +1,4 @@
-import type { DateRange, OnTimeCompletionMetric } from '@/lib/task/types/date-range';
+import type { DateRange, OnTimeCompletionMetric } from '@/lib/task/types/metrics';
 import { and, count, eq, gte, lt, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { taskTable } from '@/schema/task';

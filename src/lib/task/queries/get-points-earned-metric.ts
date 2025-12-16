@@ -1,4 +1,4 @@
-import type { DateRange, PointsEarnedMetric } from '../types/date-range';
+import type { DateRange, PointsEarnedMetric } from '../types/metrics';
 import { and, eq, gte, lt, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { taskAssigneesTable, taskTable } from '@/schema/task';

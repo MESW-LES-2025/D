@@ -106,6 +106,13 @@
       "when": 1765812114452,
       "tag": "0014_narrow_silverclaw",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1765901971107,
+      "tag": "0015_overconfident_lethal_legion",
+      "breakpoints": true
     }
   ]
 }

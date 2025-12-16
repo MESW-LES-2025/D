@@ -33,7 +33,7 @@ export async function completeGoal(goalId: string) {
       return { error: 'Goal not found' };
     }
 
-    if (goal.groupId !== session.session.activeOrganizationId) {
+    if (goal.organizationId !== session.session.activeOrganizationId) {
       return { error: 'Unauthorized' };
     }
 

@@ -1,4 +1,4 @@
-import type { CompletedTasksMetric, DateRange } from '@/lib/task/types/date-range';
+import type { CompletedTasksMetric, DateRange } from '@/lib/task/types/metrics';
 import { and, count, eq, gte, inArray, lt } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { taskTable } from '@/schema/task';
