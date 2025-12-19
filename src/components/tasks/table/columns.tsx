@@ -4,55 +4,28 @@ import type { ColumnDef } from '@tanstack/react-table';
 
 import type { DifficultyOption, PriorityOption, StatusOption, Task } from '@/lib/task/task-types';
 import { DataTableColumnHeader } from '@/components/tasks/table/data-table-column-header';
-import { DataTableRowActions } from '@/components/tasks/table/data-table-row-actions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AvatarGroup, AvatarGroupTooltip } from '@/components/ui/avatar-group';
-import { Checkbox } from '@/components/ui/checkbox';
 import { difficulties, priorities, statuses } from '@/lib/task/task-options';
 import { getInitials } from '@/lib/utils';
 
 export const columns: ColumnDef<Task>[] = [
-  {
-    id: 'select',
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected()
-          || (table.getIsSomePageRowsSelected() && 'indeterminate')
-        }
-        onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-        className="translate-y-0.5"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={value => row.toggleSelected(!!value)}
-        aria-label="Select row"
-        className="translate-y-0.5"
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
+
   {
     accessorKey: 'title',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Title" />
+      <DataTableColumnHeader column={column} title="Title" className="ml-2" />
     ),
     cell: ({ row }) => {
       return (
-        <div className="flex gap-2">
+        <div className="ml-2 flex gap-2">
           <span className="max-w-[500px] truncate font-medium">
             {row.getValue('title')}
           </span>
         </div>
       );
     },
+    sortingFn: 'alphanumeric',
   },
   {
     accessorKey: 'status',
@@ -76,6 +49,23 @@ export const columns: ColumnDef<Task>[] = [
           <span>{status.label}</span>
         </div>
       );
+    },
+    sortingFn: (rowA, rowB, columnId) => {
+      const statusA = statuses.find(
+        status => status.value === rowA.getValue(columnId),
+      );
+      const statusB = statuses.find(
+        status => status.value === rowB.getValue(columnId),
+      );
+
+      if (!statusA || !statusB) {
+        return 0;
+      }
+
+      const indexA = statuses.indexOf(statusA);
+      const indexB = statuses.indexOf(statusB);
+
+      return indexA - indexB;
     },
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
@@ -104,6 +94,23 @@ export const columns: ColumnDef<Task>[] = [
         </div>
       );
     },
+    sortingFn: (rowA, rowB, columnId) => {
+      const priorityA = priorities.find(
+        priority => priority.value === rowA.getValue(columnId),
+      );
+      const priorityB = priorities.find(
+        priority => priority.value === rowB.getValue(columnId),
+      );
+
+      if (!priorityA || !priorityB) {
+        return 0;
+      }
+
+      const indexA = priorities.indexOf(priorityA);
+      const indexB = priorities.indexOf(priorityB);
+
+      return indexA - indexB;
+    },
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
     },
@@ -130,6 +137,23 @@ export const columns: ColumnDef<Task>[] = [
           <span>{difficulty.label}</span>
         </div>
       );
+    },
+    sortingFn: (rowA, rowB, columnId) => {
+      const difficultyA = difficulties.find(
+        difficulty => difficulty.value === rowA.getValue(columnId),
+      );
+      const difficultyB = difficulties.find(
+        difficulty => difficulty.value === rowB.getValue(columnId),
+      );
+
+      if (!difficultyA || !difficultyB) {
+        return 0;
+      }
+
+      const indexA = difficulties.indexOf(difficultyA);
+      const indexB = difficulties.indexOf(difficultyB);
+
+      return indexA - indexB;
     },
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
@@ -205,9 +229,5 @@ export const columns: ColumnDef<Task>[] = [
         </div>
       );
     },
-  },
-  {
-    id: 'actions',
-    cell: ({ row }) => <DataTableRowActions row={row} />,
   },
 ];

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks-extra/no-direct-set-state-in-use-effect */
 'use client';
 
 import type {
@@ -19,6 +20,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 
+import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { DataTablePagination } from '@/components/tasks/table/data-table-pagination';
 import { DataTableToolbar } from '@/components/tasks/table/data-table-toolbar';
@@ -28,12 +30,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  isAdmin?: boolean;
+  autoOpenTaskId?: string;
 };
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  isAdmin = false,
+  autoOpenTaskId,
 }: DataTableProps<TData, TValue>) {
+  const router = useRouter();
   const [selectedRow, setSelectedRow] = React.useState<TData | null>(null);
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [rowSelection, setRowSelection] = React.useState({});
@@ -43,6 +50,23 @@ export function DataTable<TData, TValue>({
     [],
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
+
+  // Auto-open task sheet if taskId is in URL
+  React.useEffect(() => {
+    if (autoOpenTaskId && data.length > 0) {
+      const taskToOpen = data.find(
+        row => (row as TaskWithAssignees).id === autoOpenTaskId,
+      );
+
+      if (taskToOpen) {
+        setSelectedRow(taskToOpen);
+        setSheetOpen(true);
+
+        // Clean up URL after opening (optional)
+        router.replace('/tasks', { scroll: false });
+      }
+    }
+  }, [autoOpenTaskId, data, router]);
 
   // Sync selectedRow with fresh data when data changes
   React.useEffect(() => {
@@ -147,7 +171,7 @@ export function DataTable<TData, TValue>({
       <DataTablePagination table={table} />
 
       {/* Sheet opens when a row is clicked */}
-      <TaskSheet open={sheetOpen} onOpenChangeAction={setSheetOpen} task={selectedRow as TaskWithAssignees} />
+      <TaskSheet open={sheetOpen} onOpenChangeAction={setSheetOpen} task={selectedRow as TaskWithAssignees} isAdmin={isAdmin} />
     </div>
   );
 }

@@ -1,20 +1,13 @@
 import type { Metadata } from 'next';
 
-import type { TaskWithAssignees } from '@/lib/task/task-types';
-import { IconLayoutKanban, IconList } from '@tabler/icons-react';
-import { eq, inArray } from 'drizzle-orm';
+import type { Status, TaskWithAssignees } from '@/lib/task/task-types';
+import { and, eq, inArray } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { columns } from '@/components/tasks/table/columns';
-import { DataTable } from '@/components/tasks/table/data-table';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
+import { TasksTabs } from '@/components/tasks/tasks-tabs';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
+import { allStatuses, statuses } from '@/lib/task/task-options';
 import { taskAssigneesTable, taskTable } from '@/schema/task';
 import { userTable } from '@/schema/user';
 
@@ -23,7 +16,12 @@ export const metadata: Metadata = {
   description: 'A task and issue tracker build using Tanstack Table.',
 };
 
-export default async function TaskPage() {
+type Props = {
+  searchParams: Promise<{ taskId?: string }>;
+};
+
+export default async function TaskPage({ searchParams }: Props) {
+  const params = await searchParams;
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -31,11 +29,23 @@ export default async function TaskPage() {
     redirect('/sign-in?callbackUrl=/dashboard');
   }
 
+  // TODO: Implement role-based access control
+  const isAdmin = true;
+
   // Fetch tasks from your database
+  const statusList = isAdmin ? allStatuses.map(s => s.value) as Status[] : statuses.map(s => s.value) as Status[];
   const tasksData = await db
     .select()
     .from(taskTable)
-    .where(eq(taskTable.organizationId, session.session?.activeOrganizationId ?? ''));
+    .where(
+      and(
+        eq(taskTable.organizationId, session.session?.activeOrganizationId ?? ''),
+        inArray(
+          taskTable.status,
+          statusList,
+        ),
+      ),
+    );
 
   // Fetch assignees for all tasks
   const taskIds = tasksData.map(t => t.id);
@@ -78,24 +88,12 @@ export default async function TaskPage() {
           </p>
         </div>
       </div>
-      <Tabs defaultValue="table" className="flex w-full gap-8">
-        <TabsList className="h-10">
-          <TabsTrigger value="table" className="p-4">
-            <IconList className="size-5" />
-            Table
-          </TabsTrigger>
-          <TabsTrigger value="board" className="p-4">
-            <IconLayoutKanban className="size-5" />
-            Board
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="table">
-          <DataTable data={tasks} columns={columns} />
-        </TabsContent>
-        <TabsContent value="board">
-          <div>Kanban Board coming soon...</div>
-        </TabsContent>
-      </Tabs>
+      <TasksTabs
+        tasks={tasks}
+        isAdmin={isAdmin}
+        taskId={params.taskId}
+        currentUserId={session.user?.id}
+      />
     </div>
   );
 }

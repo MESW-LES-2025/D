@@ -22,11 +22,11 @@ export default async function AccountPage() {
   }
 
   return (
-    <>
+    <div className="flex-1 space-y-6 xl:max-w-4xl">
       <AvatarUpdateCard />
       <NameUpdateCard />
       <PasswordUpdateCard />
       <DeleteAccountCard />
-    </>
+    </div>
   );
 }

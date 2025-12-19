@@ -1,5 +1,5 @@
 {
-  "id": "5e022157-b069-40d5-89ee-bc0503b3301f",
+  "id": "7489bd58-4346-4100-b401-6581f7aecc2f",
   "prevId": "ed75239a-8e7e-4a00-bd22-b0592d546510",
   "version": "7",
   "dialect": "postgresql",
@@ -229,12 +229,6 @@
         },
         "expires_at": {
           "name": "expires_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true
@@ -616,6 +610,13 @@
         },
         "created_at": {
           "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -1041,7 +1042,8 @@
         "review",
         "done",
         "archived",
-        "canceled"
+        "canceled",
+        "deleted"
       ]
     }
   },

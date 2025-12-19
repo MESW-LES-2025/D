@@ -1,24 +1,14 @@
 'use client';
 
 import type { Table } from '@tanstack/react-table';
-import { IconCirclePlus, IconUserCheck, IconX } from '@tabler/icons-react';
-import { useState, useTransition } from 'react';
-import { toast } from 'sonner';
 
-import { TaskForm } from '@/components/forms/create-task-form';
-import { createTask } from '@/components/tasks/create-task.action';
+import { IconUserCheck, IconX } from '@tabler/icons-react';
+import { useState } from 'react';
 import { DataTableFacetedFilter } from '@/components/tasks/table/data-table-faceted-filter';
 import { DataTableViewOptions } from '@/components/tasks/table/data-table-view-options';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+
 import { Input } from '@/components/ui/input';
-import { client as authClient } from '@/lib/auth/auth-client';
 import { difficulties, priorities, statuses } from '@/lib/task/task-options';
 import { cn } from '@/lib/utils';
 
@@ -31,27 +21,6 @@ export function DataTableToolbar<TData>({
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const [assignedToMe, setAssignedToMe] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [loading, startTransition] = useTransition();
-  const { data: activeOrganization } = authClient.useActiveOrganization();
-
-  const handleCreateTask = (values: any) => {
-    startTransition(async () => {
-      const result = await createTask(values, activeOrganization?.id);
-
-      if (result.error) {
-        toast.error(result.error || 'Failed to create task');
-        return;
-      }
-
-      if (result.success) {
-        toast.success('Task created successfully!', {
-          description: `${values.title} has been created`,
-        });
-        setOpen(false);
-      }
-    });
-  };
 
   return (
     <div className="flex items-center justify-between">
@@ -118,31 +87,6 @@ export function DataTableToolbar<TData>({
 
       <div className="flex items-center gap-2">
         <DataTableViewOptions table={table} />
-
-        <Button
-          size="sm"
-          onClick={() => setOpen(true)}
-        >
-          <IconCirclePlus className="size-4" />
-          Add Task
-        </Button>
-
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Create new task</DialogTitle>
-              <DialogDescription>
-                Enter the details to create a new task
-              </DialogDescription>
-            </DialogHeader>
-
-            <TaskForm
-              loading={loading}
-              onSubmit={handleCreateTask}
-              onCancel={() => setOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   );

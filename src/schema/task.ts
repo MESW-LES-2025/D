@@ -20,14 +20,15 @@ export const taskTable = pgTable('tasks', {
   dueDate: timestamp('due_date', { mode: 'date' }),
   score: integer('score').default(0).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
 export const taskAssigneesTable = pgTable('task_assignees', {
   taskId: uuid('task_id').references(() => taskTable.id, { onDelete: 'cascade' }).notNull(),
   userId: text('user_id').references(() => userTable.id, { onDelete: 'cascade' }).notNull(),
-}, table => ({
-  pk: primaryKey({ columns: [table.taskId, table.userId] }),
-}));
+}, table => [
+  primaryKey({ columns: [table.taskId, table.userId] }),
+]);
 
 export const taskLogTable = pgTable('task_logs', {
   id: uuid('id').defaultRandom().primaryKey(),

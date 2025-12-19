@@ -85,7 +85,7 @@ export function AssigneesQuickAction({ assignees, taskId }: AssigneesQuickAction
 
   return (
     <div className="flex items-center gap-1">
-      {assigneeList.length > 0 && (
+      {(assigneeList.length > 0 || avatarElements.length > 0) && (
         <AvatarGroup variant="motion" className="group -space-x-3">
           {avatarElements}
         </AvatarGroup>

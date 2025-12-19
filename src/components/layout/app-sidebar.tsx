@@ -4,6 +4,9 @@ import {
   IconDashboard,
   IconListCheck,
   IconSettings,
+  IconStar,
+  IconTicket,
+  IconTrophy,
   IconUserShare,
 } from '@tabler/icons-react';
 import * as React from 'react';
@@ -31,9 +34,24 @@ const data = {
       icon: IconListCheck,
     },
     {
+      title: 'Achievements',
+      url: 'achievements',
+      icon: IconStar,
+    },
+    {
       title: 'Team',
       url: 'team',
       icon: IconUserShare,
+    },
+    {
+      title: 'Leaderboard',
+      url: 'leaderboard',
+      icon: IconTrophy,
+    },
+    {
+      title: 'Rewards',
+      url: 'rewards',
+      icon: IconTicket,
     },
   ],
   navSecondary: [
@@ -45,7 +63,11 @@ const data = {
   ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
+  earnedPoints?: number;
+};
+
+export function AppSidebar({ earnedPoints = 0, ...props }: AppSidebarProps) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -56,7 +78,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <UserDropdown />
+        <UserDropdown earnedPoints={earnedPoints} />
       </SidebarFooter>
     </Sidebar>
   );
