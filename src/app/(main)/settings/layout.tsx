@@ -1,4 +1,4 @@
-import { IconListCheck, IconUser } from '@tabler/icons-react';
+import { IconChartLine, IconListCheck, IconUser } from '@tabler/icons-react';
 import React from 'react';
 
 import { SettingsNav } from '@/components/layout/settings-nav';
@@ -9,6 +9,11 @@ const sidebarNavItems = [
     title: 'Account',
     href: '/settings/account',
     icon: <IconUser size={18} />,
+  },
+  {
+    title: 'Point History',
+    href: '/settings/point-history',
+    icon: <IconChartLine size={18} />,
   },
   {
     title: 'Tasks',

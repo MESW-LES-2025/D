@@ -65,10 +65,10 @@ export function TaskSheet({ children, open, onOpenChangeAction, task, isAdmin = 
 
           {/* Metadata */}
           <div className="flex flex-col gap-3 text-sm">
-            {/* Created time */}
+            {/* Created at */}
             <div className="flex items-center gap-2">
               <IconClockHour4 className="size-4 text-muted-foreground" />
-              <span className="max-w-32 flex-1 font-semibold text-muted-foreground">Created time</span>
+              <span className="max-w-32 flex-1 font-semibold text-muted-foreground">Created at</span>
               <span className="ml-2 min-w-0 truncate text-right sm:text-left">
                 {task?.createdAt.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
                 <span className="ml-2 text-muted-foreground">{task?.createdAt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}</span>
@@ -116,6 +116,7 @@ export function TaskSheet({ children, open, onOpenChangeAction, task, isAdmin = 
                       <DifficultyQuickAction
                         difficulty={difficultyOption}
                         taskId={task?.id ?? ''}
+                        task={task}
                       />
                     )
                   : (

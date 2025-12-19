@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks-extra/no-direct-set-state-in-use-effect */
 'use client';
 
 import type {
@@ -19,6 +20,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 
+import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { DataTablePagination } from '@/components/tasks/table/data-table-pagination';
 import { TaskSheet } from '@/components/tasks/task-sheet';
@@ -29,13 +31,16 @@ type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   isAdmin?: boolean;
+  autoOpenTaskId?: string;
 };
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   isAdmin = false,
+  autoOpenTaskId,
 }: DataTableProps<TData, TValue>) {
+  const router = useRouter();
   const [selectedRow, setSelectedRow] = React.useState<TData | null>(null);
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [rowSelection, setRowSelection] = React.useState({});
@@ -46,6 +51,23 @@ export function DataTable<TData, TValue>({
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
+  // Auto-open task sheet if taskId is in URL
+  React.useEffect(() => {
+    if (autoOpenTaskId && data.length > 0) {
+      const taskToOpen = data.find(
+        row => (row as TaskWithAssignees).id === autoOpenTaskId,
+      );
+
+      if (taskToOpen) {
+        setSelectedRow(taskToOpen);
+        setSheetOpen(true);
+
+        // Clean up URL after opening (optional)
+        router.replace('/tasks', { scroll: false });
+      }
+    }
+  }, [autoOpenTaskId, data, router]);
+
   // Sync selectedRow with fresh data when data changes
   React.useEffect(() => {
     if (selectedRow && sheetOpen) {
@@ -53,7 +75,6 @@ export function DataTable<TData, TValue>({
         row => (row as TaskWithAssignees).id === (selectedRow as unknown as TaskWithAssignees).id,
       );
       if (updatedRow) {
-        // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
         setSelectedRow(updatedRow);
       }
     }

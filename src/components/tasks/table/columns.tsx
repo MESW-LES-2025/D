@@ -25,6 +25,7 @@ export const columns: ColumnDef<Task>[] = [
         </div>
       );
     },
+    sortingFn: 'alphanumeric',
   },
   {
     accessorKey: 'status',
@@ -48,6 +49,23 @@ export const columns: ColumnDef<Task>[] = [
           <span>{status.label}</span>
         </div>
       );
+    },
+    sortingFn: (rowA, rowB, columnId) => {
+      const statusA = statuses.find(
+        status => status.value === rowA.getValue(columnId),
+      );
+      const statusB = statuses.find(
+        status => status.value === rowB.getValue(columnId),
+      );
+
+      if (!statusA || !statusB) {
+        return 0;
+      }
+
+      const indexA = statuses.indexOf(statusA);
+      const indexB = statuses.indexOf(statusB);
+
+      return indexA - indexB;
     },
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
@@ -76,6 +94,23 @@ export const columns: ColumnDef<Task>[] = [
         </div>
       );
     },
+    sortingFn: (rowA, rowB, columnId) => {
+      const priorityA = priorities.find(
+        priority => priority.value === rowA.getValue(columnId),
+      );
+      const priorityB = priorities.find(
+        priority => priority.value === rowB.getValue(columnId),
+      );
+
+      if (!priorityA || !priorityB) {
+        return 0;
+      }
+
+      const indexA = priorities.indexOf(priorityA);
+      const indexB = priorities.indexOf(priorityB);
+
+      return indexA - indexB;
+    },
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
     },
@@ -102,6 +137,23 @@ export const columns: ColumnDef<Task>[] = [
           <span>{difficulty.label}</span>
         </div>
       );
+    },
+    sortingFn: (rowA, rowB, columnId) => {
+      const difficultyA = difficulties.find(
+        difficulty => difficulty.value === rowA.getValue(columnId),
+      );
+      const difficultyB = difficulties.find(
+        difficulty => difficulty.value === rowB.getValue(columnId),
+      );
+
+      if (!difficultyA || !difficultyB) {
+        return 0;
+      }
+
+      const indexA = difficulties.indexOf(difficultyA);
+      const indexB = difficulties.indexOf(difficultyB);
+
+      return indexA - indexB;
     },
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
