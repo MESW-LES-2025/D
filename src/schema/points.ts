@@ -9,6 +9,7 @@ export const pointTransactionTypeEnum = pgEnum('point_transaction_type', [
   'task_completed',
   'task_uncompleted',
   'task_property_changed',
+  'reward_redemption',
 ]);
 
 // User points table - stores total points per user per organization

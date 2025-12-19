@@ -44,7 +44,7 @@ async function getOrCreateUserPoints(userId: string, organizationId: string) {
 /**
  * Record a point transaction and update user's total points
  */
-async function recordPointTransaction(
+export async function recordPointTransaction(
   userId: string,
   organizationId: string,
   taskId: string | null,

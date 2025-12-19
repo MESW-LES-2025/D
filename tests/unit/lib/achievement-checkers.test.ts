@@ -66,30 +66,6 @@ describe('Achievement Thresholds', () => {
   });
 });
 
-describe('Time Window Logic', () => {
-  it('Speed Demon uses a 30-minute window', () => {
-    const windowMinutes = 30;
-    const windowMs = windowMinutes * 60 * 1000;
-
-    const now = new Date();
-    const thirtyMinutesAgo = new Date(Date.now() - windowMs);
-
-    expect(thirtyMinutesAgo.getTime()).toBeLessThan(now.getTime());
-    expect(now.getTime() - thirtyMinutesAgo.getTime()).toBe(windowMs);
-  });
-
-  it('Task Master uses a 24-hour window starting at midnight', () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    expect(today < tomorrow).toBe(true);
-    expect(tomorrow.getTime() - today.getTime()).toBe(24 * 60 * 60 * 1000);
-  });
-});
-
 describe('Weekday Logic', () => {
   it('should identify weekdays correctly', () => {
     const monday = new Date('2025-12-15'); // Monday
