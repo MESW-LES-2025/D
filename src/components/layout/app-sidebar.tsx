@@ -4,6 +4,7 @@ import {
   IconDashboard,
   IconListCheck,
   IconSettings,
+  IconTicket,
   IconUserShare,
 } from '@tabler/icons-react';
 import * as React from 'react';
@@ -34,6 +35,11 @@ const data = {
       title: 'Team',
       url: 'team',
       icon: IconUserShare,
+    },
+    {
+      title: 'Rewards',
+      url: 'rewards',
+      icon: IconTicket,
     },
   ],
   navSecondary: [

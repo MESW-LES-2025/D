@@ -11,5 +11,6 @@
 export * from './goal';
 export * from './organization';
 export * from './points';
+export * from './reward';
 export * from './task';
 export * from './user';
