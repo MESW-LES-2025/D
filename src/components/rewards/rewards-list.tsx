@@ -49,7 +49,7 @@ export function RewardsList({
   rewards,
   earnedPoints,
   userId,
-  organizationId,
+  // organizationId,
   redemptions,
   onRedeem,
   onRemove,
@@ -167,13 +167,6 @@ export function RewardsList({
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p>
-          {organizationId}
-        </p>
-      </div>
-
       {/* Points Summary */}
       <div className="rounded-lg bg-muted p-4">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
