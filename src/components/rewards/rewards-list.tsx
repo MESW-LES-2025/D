@@ -146,24 +146,6 @@ export function RewardsList({
             <p className="text-sm text-muted-foreground">Your Points</p>
             <p className="text-2xl font-bold">{earnedPoints}</p>
           </div>
-          {/* <div>
-            <p className="text-sm text-muted-foreground">Lowest Reward</p>
-            <p className="text-2xl font-bold text-green-600">
-              {rewards.length > 0 ? `${Math.min(...rewards.map(r => r.points))} pts` : '0 pts'}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Highest Reward</p>
-            <p className="text-2xl font-bold text-purple-600">
-              {rewards.length > 0 ? `${Math.max(...rewards.map(r => r.points))} pts` : '0 pts'}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Average Cost</p>
-            <p className="text-2xl font-bold text-blue-600">
-              {rewards.length > 0 ? `${Math.round(rewards.reduce((sum, r) => sum + r.points, 0) / rewards.length)} pts` : '0 pts'}
-            </p>
-          </div> */}
         </div>
       </div>
 
@@ -172,8 +154,11 @@ export function RewardsList({
         {sortedRewards.map((reward) => {
           const rewardStatus = getRewardStatus(reward.id);
           const isRedeemed = rewardStatus !== null;
-          const percentage = Math.min((earnedPoints / reward.points) * 100, 100);
           const canAfford = earnedPoints >= reward.points && !isRedeemed;
+
+          // Show progress as either earned points or reward points (whichever is smaller)
+          const displayPoints = Math.min(earnedPoints, reward.points);
+          const percentage = canAfford ? 100 : (displayPoints / reward.points) * 100;
 
           return (
             <div
@@ -265,7 +250,7 @@ export function RewardsList({
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Progress:</span>
                       <span className="font-medium text-card-foreground">
-                        {earnedPoints}
+                        {displayPoints}
                         /
                         {reward.points}
                         {' '}
@@ -294,9 +279,9 @@ export function RewardsList({
                             )
                           : (
                               <span className="text-card-foreground">
-                                {reward.points - earnedPoints}
-                                {' '}
-                                more points needed
+                                {reward.points - earnedPoints > 0
+                                  ? `${reward.points - earnedPoints} more points needed`
+                                  : 'Ready to claim!'}
                               </span>
                             )}
                       </span>

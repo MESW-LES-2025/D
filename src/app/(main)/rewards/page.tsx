@@ -8,6 +8,7 @@ import { RewardsList } from '@/components/rewards/rewards-list';
 import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
+import { recordPointTransaction } from '@/lib/utils/pointTransactionHelpers';
 import { userPointsTable } from '@/schema';
 import * as organizationSchema from '@/schema/organization';
 import { rewardRedemptionsTable, rewardTable } from '@/schema/reward';
@@ -144,6 +145,22 @@ async function redeemReward(rewardId: string, userId: string, organizationId: st
       throw new Error('Insufficient points');
     }
 
+    // Record the point transaction (deduct points)
+    await recordPointTransaction(
+      userId,
+      organizationId,
+      null, // taskId is null for reward redemptions
+      'reward_redemption',
+      -reward.points, // Negative number for deduction
+      {
+        rewardId: reward.id,
+        rewardTitle: reward.title,
+        rewardPoints: reward.points,
+        transactionType: 'reward_redemption',
+      },
+    );
+
+    // Create the redemption record with 'pending' status
     await db.insert(rewardRedemptionsTable).values({
       rewardId,
       userId,
