@@ -200,9 +200,33 @@ async function getUserRedemptions(userId: string, organizationId: string) {
   }
 }
 
+async function removeReward(rewardId: string) {
+  'use server';
+  try {
+    // Check if any user has redeemed this reward
+    const existingRedemptions = await db
+      .select()
+      .from(rewardRedemptionsTable)
+      .where(eq(rewardRedemptionsTable.rewardId, rewardId))
+      .limit(1);
+
+    if (existingRedemptions.length > 0) {
+      throw new Error('Cannot remove reward that has been redeemed by users');
+    }
+
+    // Delete the reward
+    await db.delete(rewardTable).where(eq(rewardTable.id, rewardId));
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to remove reward:', error);
+    throw error;
+  }
+}
+
 // Then in your page component:
 
-export default async function TeamPage() {
+export default async function RewardsPage() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -247,6 +271,11 @@ export default async function TeamPage() {
                   'use server';
                   await redeemReward(rewardId, currentUser.id, organizationId);
                 }}
+                onRemove={async (rewardId: string) => {
+                  'use server';
+                  await removeReward(rewardId);
+                }}
+                canRemove={true} // AQUI COLOCAR SE E ADMIN OU NAO
               />
             </div>
           </div>

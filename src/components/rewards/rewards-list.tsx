@@ -1,6 +1,6 @@
 'use client';
 
-import { IconCircle } from '@tabler/icons-react';
+import { IconCircle, IconTrash } from '@tabler/icons-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -41,6 +41,8 @@ type RewardsListProps = {
   organizationId: string | null;
   redemptions: Redemption[];
   onRedeem: (rewardId: string) => Promise<void>;
+  onRemove: (rewardId: string) => Promise<void>; // New prop for removing rewards
+  canRemove: boolean; // New prop to check if user can remove rewards
 };
 
 export function RewardsList({
@@ -50,6 +52,8 @@ export function RewardsList({
   organizationId,
   redemptions,
   onRedeem,
+  onRemove,
+  canRemove,
 }: RewardsListProps) {
   // Helper function to check if a reward is redeemed
   const getRewardStatus = (rewardId: string): RedemptionStatus | null => {
@@ -58,6 +62,37 @@ export function RewardsList({
       return null;
     }
     return toRedemptionStatus(redemption.status);
+  };
+
+  // Check if ANY user has redeemed this reward (not just current user)
+  const isRewardRedeemedByAnyone = (rewardId: string): boolean => {
+    return redemptions.some(r => r.rewardId === rewardId);
+  };
+
+  const handleRemove = async (reward: Reward) => {
+    if (isRewardRedeemedByAnyone(reward.id)) {
+      toast.error('Cannot Remove', {
+        description: 'This reward has been redeemed by users and cannot be removed.',
+      });
+      return;
+    }
+
+    const toastId = toast.loading('Removing reward...');
+
+    try {
+      await onRemove(reward.id);
+
+      toast.success('Reward Removed!', {
+        description: `Successfully removed ${reward.title}.`,
+        id: toastId,
+      });
+    } catch (error) {
+      console.error('Failed to remove reward:', error);
+      toast.error('Removal Failed', {
+        description: error instanceof Error ? error.message : 'There was an error removing the reward. Please try again.',
+        id: toastId,
+      });
+    }
   };
 
   // Sort rewards: non-redeemed first (by points), then redeemed (by redemption status/points)
@@ -154,6 +189,7 @@ export function RewardsList({
         {sortedRewards.map((reward) => {
           const rewardStatus = getRewardStatus(reward.id);
           const isRedeemed = rewardStatus !== null;
+          const isRedeemedByAnyone = isRewardRedeemedByAnyone(reward.id);
           const canAfford = earnedPoints >= reward.points && !isRedeemed;
 
           // Show progress as either earned points or reward points (whichever is smaller)
@@ -315,9 +351,17 @@ export function RewardsList({
                           >
                             {canAfford ? 'Claim Now' : 'Need More Points'}
                           </Button>
-                          <Button variant="secondary" size="sm">
-                            Edit
-                          </Button>
+                          {canRemove && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemove(reward)}
+                              disabled={isRedeemedByAnyone}
+                              className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                            >
+                              <IconTrash className="h-4 w-4" />
+                            </Button>
+                          )}
                         </>
                       )}
                 </div>
