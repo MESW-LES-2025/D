@@ -59,7 +59,7 @@ describe('timeAgo', () => {
     expect(timeAgo(oneDayAgo)).toContain('day');
   });
 
-  it('should return formated date for dates older than 7 days', () => {
+  it('should return formatted date for dates older than 7 days', () => {
     const eightDaysAgo = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
     const result = timeAgo(eightDaysAgo);
 
