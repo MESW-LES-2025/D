@@ -109,7 +109,7 @@ export async function awardPointsToAssignees(
     return;
   }
 
-  // Calculate points per assignee
+  // Calculate points per assignee (totalPoints is already the total)
   const pointsPerAssignee = Math.round(totalPoints / assignees.length);
 
   // Award points to each assignee
@@ -122,9 +122,9 @@ export async function awardPointsToAssignees(
       pointsPerAssignee,
       {
         ...metadata,
-        totalTaskPoints: totalPoints,
-        assigneeCount: assignees.length,
+        totalPoints,
         pointsPerAssignee,
+        assigneeCount: assignees.length,
       },
     );
   }
@@ -153,7 +153,7 @@ export async function deductPointsFromAssignees(
     return;
   }
 
-  // Calculate points per assignee (same as when awarded)
+  // Calculate points per assignee (totalPoints is already the total)
   const pointsPerAssignee = Math.round(totalPoints / assignees.length);
 
   // Deduct points from each assignee
@@ -166,9 +166,9 @@ export async function deductPointsFromAssignees(
       -pointsPerAssignee, // Negative for deduction
       {
         ...metadata,
-        totalTaskPoints: totalPoints,
-        assigneeCount: assignees.length,
+        totalPoints,
         pointsPerAssignee,
+        assigneeCount: assignees.length,
       },
     );
   }
@@ -177,21 +177,16 @@ export async function deductPointsFromAssignees(
 /**
  * Adjust points when task properties change (recalculate and apply delta)
  * This is used when priority, difficulty, or due date changes on a done task
+ * Note: oldPoints and newPoints are TOTAL points (not per-assignee)
  */
 export async function adjustPointsForPropertyChange(
   taskId: string,
   organizationId: string,
-  oldPoints: number,
-  newPoints: number,
+  oldTotalPoints: number,
+  newTotalPoints: number,
   transactionType: PointTransactionType,
   metadata: object,
 ): Promise<void> {
-  const delta = newPoints - oldPoints;
-
-  if (delta === 0) {
-    return; // No change needed
-  }
-
   // Get all assignees for this task
   const assignees = await db
     .select({
@@ -206,9 +201,13 @@ export async function adjustPointsForPropertyChange(
   }
 
   // Calculate delta per assignee
-  const oldPointsPerAssignee = Math.round(oldPoints / assignees.length);
-  const newPointsPerAssignee = Math.round(newPoints / assignees.length);
+  const oldPointsPerAssignee = Math.round(oldTotalPoints / assignees.length);
+  const newPointsPerAssignee = Math.round(newTotalPoints / assignees.length);
   const deltaPerAssignee = newPointsPerAssignee - oldPointsPerAssignee;
+
+  if (deltaPerAssignee === 0) {
+    return; // No change needed
+  }
 
   // Apply delta to each assignee
   for (const assignee of assignees) {
@@ -220,8 +219,8 @@ export async function adjustPointsForPropertyChange(
       deltaPerAssignee,
       {
         ...metadata,
-        oldTotalPoints: oldPoints,
-        newTotalPoints: newPoints,
+        oldTotalPoints,
+        newTotalPoints,
         assigneeCount: assignees.length,
         oldPointsPerAssignee,
         newPointsPerAssignee,

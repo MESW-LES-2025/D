@@ -15,26 +15,14 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "group_id": {
-          "name": "group_id",
+        "organization_id": {
+          "name": "organization_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "assignee_id": {
-          "name": "assignee_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_by_id": {
-          "name": "created_by_id",
+        "creator_id": {
+          "name": "creator_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -47,18 +35,6 @@
         },
         "description": {
           "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "target": {
-          "name": "target",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "reward": {
-          "name": "reward",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -103,22 +79,16 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
-        },
-        "removed_at": {
-          "name": "removed_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "goals_user_id_user_id_fk": {
-          "name": "goals_user_id_user_id_fk",
+        "goals_organization_id_organization_id_fk": {
+          "name": "goals_organization_id_organization_id_fk",
           "tableFrom": "goals",
-          "tableTo": "user",
+          "tableTo": "organization",
           "columnsFrom": [
-            "user_id"
+            "organization_id"
           ],
           "columnsTo": [
             "id"
@@ -126,25 +96,12 @@
           "onDelete": "set null",
           "onUpdate": "no action"
         },
-        "goals_assignee_id_user_id_fk": {
-          "name": "goals_assignee_id_user_id_fk",
+        "goals_creator_id_user_id_fk": {
+          "name": "goals_creator_id_user_id_fk",
           "tableFrom": "goals",
           "tableTo": "user",
           "columnsFrom": [
-            "assignee_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "goals_created_by_id_user_id_fk": {
-          "name": "goals_created_by_id_user_id_fk",
-          "tableFrom": "goals",
-          "tableTo": "user",
-          "columnsFrom": [
-            "created_by_id"
+            "creator_id"
           ],
           "columnsTo": [
             "id"
@@ -177,7 +134,34 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "goal_tasks_goal_id_goals_id_fk": {
+          "name": "goal_tasks_goal_id_goals_id_fk",
+          "tableFrom": "goal_tasks",
+          "tableTo": "goals",
+          "columnsFrom": [
+            "goal_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "goal_tasks_task_id_tasks_id_fk": {
+          "name": "goal_tasks_task_id_tasks_id_fk",
+          "tableFrom": "goal_tasks",
+          "tableTo": "tasks",
+          "columnsFrom": [
+            "task_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {
         "goal_tasks_goal_id_task_id_pk": {
           "name": "goal_tasks_goal_id_task_id_pk",
@@ -603,66 +587,6 @@
           ]
         }
       },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.rewards": {
-      "name": "rewards",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "rewards_organization_id_organization_id_fk": {
-          "name": "rewards_organization_id_organization_id_fk",
-          "tableFrom": "rewards",
-          "tableTo": "organization",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

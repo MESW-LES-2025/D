@@ -13,6 +13,7 @@ export async function deleteTask(taskId: string) {
       .where(eq(taskTable.id, taskId));
 
     revalidatePath('/tasks');
+    revalidatePath('/goals');
 
     return { success: true };
   } catch (error) {

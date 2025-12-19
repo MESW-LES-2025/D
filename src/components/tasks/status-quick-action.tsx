@@ -34,6 +34,11 @@ export function StatusQuickAction({ status, taskId, showHidden = false }: Status
   const handleStatusChange = (newStatus: Status) => {
     startTransition(async () => {
       setOptimisticStatus(newStatus);
+
+      // Get the previously unlocked achievements before the status change
+      const previouslyUnlockedStr = localStorage.getItem('unlockedAchievements');
+      const previouslyUnlocked = previouslyUnlockedStr ? JSON.parse(previouslyUnlockedStr) : [];
+
       const result = await updateTaskStatus(taskId, newStatus);
 
       if (result.error) {
@@ -48,10 +53,34 @@ export function StatusQuickAction({ status, taskId, showHidden = false }: Status
           'Done! Great work!',
         ];
         const randomMessage = completionMessages[Math.floor(Math.random() * completionMessages.length)];
-        const pointsText = result.score ? ` +${result.score} points` : '';
+        let pointsText = '';
+        if (result.score && result.score > 0) {
+          if (result.assigneeCount && result.assigneeCount > 1) {
+            const pointsPerAssignee = Math.round(result.score / result.assigneeCount);
+            pointsText = ` +${pointsPerAssignee} pts each (${result.score} total)`;
+          } else {
+            pointsText = ` +${result.score} points`;
+          }
+        }
         toast.success(`${randomMessage}${pointsText}`);
       } else {
         toast.success('Status updated successfully!');
+      }
+
+      // Show achievement toasts only for newly unlocked achievements
+      if (result.newlyUnlocked && result.newlyUnlocked.length > 0) {
+        // Find achievements that weren't unlocked before
+        result.newlyUnlocked.forEach((achievement) => {
+          if (!previouslyUnlocked.includes(achievement.id)) {
+            toast.success(`🏆 Achievement Unlocked: ${achievement.name}!`, {
+              duration: 5000,
+            });
+          }
+        });
+
+        // Update localStorage with currently unlocked achievement IDs
+        const currentlyUnlockedIds = result.newlyUnlocked.map(a => a.id);
+        localStorage.setItem('unlockedAchievements', JSON.stringify(currentlyUnlockedIds));
       }
     });
   };
