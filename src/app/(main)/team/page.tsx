@@ -1,13 +1,18 @@
 import type { User } from 'better-auth';
 import type { Metadata } from 'next';
+// import { organization } from 'better-auth/plugins/organization';
 import { eq } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { InviteOrgDialog } from '@/components/dialogs/invite-org-dialog';
 import { RoleFilter } from '@/components/team/role-filter-search';
 import { Button } from '@/components/ui/button';
+import * as userPermissions from '@/components/UserPermissions';
 import { auth } from '@/lib/auth/auth';
+// import { Result } from 'postcss';
+// import { organization } from '@/lib/auth/auth-client';
 import { db } from '@/lib/db';
+// import { getUserRole } from '@/lib/utils';
 import * as organizationSchema from '@/schema/organization';
 import { userTable } from '@/schema/user';
 
@@ -81,6 +86,9 @@ export default async function TeamPage() {
   const activeOrganization = await getActiveOrganization(session.session.activeOrganizationId);
   const users = await getUsersInOrganization(session.session.activeOrganizationId);
 
+  const currentUserRole = await userPermissions.getUserRole(currentUser.id, session.session.activeOrganizationId);
+  const hasPermission = await userPermissions.getUserPermissions(currentUserRole);
+
   return (
     <div className="min-h-screen py-12">
       <div className="mx-auto max-w-4xl px-6">
@@ -94,9 +102,8 @@ export default async function TeamPage() {
               <Button>Invite Member</Button>
             </InviteOrgDialog>
           </div>
-
           <div className="space-y-4">
-            <RoleFilter users={users} currentUser={currentUser} />
+            <RoleFilter users={users} currentUser={currentUser} hasPermissions={hasPermission} />
           </div>
         </div>
       </div>
