@@ -20,11 +20,13 @@ export const member = ac.newRole({
 export const admin = ac.newRole({
   // Admin permissions (default ones are usually fine)
   organization: ['update', 'delete'],
+  invitation: ['create', 'cancel'],
   member: ['create', 'update'],
 });
 
 export const owner = ac.newRole({
   // Owner permissions (default ones are usually fine)
   organization: ['update', 'delete'],
+  invitation: ['create', 'cancel'],
   member: ['create', 'update', 'delete'],
 });
