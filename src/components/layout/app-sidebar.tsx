@@ -4,6 +4,7 @@ import {
   IconDashboard,
   IconListCheck,
   IconSettings,
+  IconStar,
   IconTicket,
   IconTrophy,
   IconUserShare,
@@ -35,7 +36,7 @@ const data = {
     {
       title: 'Achievements',
       url: 'achievements',
-      icon: IconTrophy,
+      icon: IconStar,
     },
     {
       title: 'Team',
@@ -43,12 +44,14 @@ const data = {
       icon: IconUserShare,
     },
     {
-      title: 'Rewards',
-      url: 'rewards',
-      icon: IconTicket,
       title: 'Leaderboard',
       url: 'leaderboard',
       icon: IconTrophy,
+    },
+    {
+      title: 'Rewards',
+      url: 'rewards',
+      icon: IconTicket,
     },
   ],
   navSecondary: [
