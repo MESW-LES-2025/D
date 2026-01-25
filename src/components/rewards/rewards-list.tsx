@@ -1,7 +1,8 @@
 'use client';
 
-import { IconCircle, IconTrash } from '@tabler/icons-react';
+import { IconTrash } from '@tabler/icons-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
@@ -39,23 +40,24 @@ type RewardsListProps = {
   earnedPoints: number;
   userId: string;
   organizationId: string | null;
-  redemptions: Redemption[];
+  redemptions: Redemption[]; // This now contains ALL redemptions
   onRedeem: (rewardId: string) => Promise<void>;
-  onRemove: (rewardId: string) => Promise<void>; // New prop for removing rewards
-  canRemove: boolean; // New prop to check if user can remove rewards
+  onRemove: (rewardId: string) => Promise<void>;
+  hasPermission: boolean;
 };
 
 export function RewardsList({
   rewards,
   earnedPoints,
   userId,
-  // organizationId,
   redemptions,
   onRedeem,
   onRemove,
-  canRemove,
+  hasPermission,
 }: RewardsListProps) {
-  // Helper function to check if a reward is redeemed
+  const router = useRouter();
+
+  // Helper function to check if a reward is redeemed by current user
   const getRewardStatus = (rewardId: string): RedemptionStatus | null => {
     const redemption = redemptions.find(r => r.rewardId === rewardId && r.userId === userId);
     if (!redemption) {
@@ -67,6 +69,11 @@ export function RewardsList({
   // Check if ANY user has redeemed this reward (not just current user)
   const isRewardRedeemedByAnyone = (rewardId: string): boolean => {
     return redemptions.some(r => r.rewardId === rewardId);
+  };
+
+  // Check if we should show delete button (only if NO ONE has redeemed it)
+  const shouldShowDeleteButton = (rewardId: string): boolean => {
+    return hasPermission && !isRewardRedeemedByAnyone(rewardId);
   };
 
   const handleRemove = async (reward: Reward) => {
@@ -86,6 +93,7 @@ export function RewardsList({
         description: `Successfully removed ${reward.title}.`,
         id: toastId,
       });
+      router.refresh();
     } catch (error) {
       console.error('Failed to remove reward:', error);
       toast.error('Removal Failed', {
@@ -100,22 +108,18 @@ export function RewardsList({
     const aStatus = getRewardStatus(a.id);
     const bStatus = getRewardStatus(b.id);
 
-    // First, separate redeemed and non-redeemed
     if (aStatus === null && bStatus !== null) {
-      return -1; // a (non-redeemed) comes before b (redeemed)
+      return -1;
     }
     if (aStatus !== null && bStatus === null) {
-      return 1; // a (redeemed) comes after b (non-redeemed)
+      return 1;
     }
 
-    // If both are non-redeemed, sort by points (lowest to highest)
     if (aStatus === null && bStatus === null) {
       return a.points - b.points;
     }
 
-    // If both are redeemed, sort by redemption status
     if (aStatus !== null && bStatus !== null) {
-      // Sort by status order: 'pending' -> 'completed' -> 'cancelled'
       const statusOrder = { pending: 1, completed: 2, cancelled: 3 };
       const aStatusOrder = statusOrder[aStatus as keyof typeof statusOrder] || 4;
       const bStatusOrder = statusOrder[bStatus as keyof typeof statusOrder] || 4;
@@ -124,7 +128,6 @@ export function RewardsList({
         return aStatusOrder - bStatusOrder;
       }
 
-      // If same status, sort by points
       return a.points - b.points;
     }
 
@@ -156,6 +159,7 @@ export function RewardsList({
         description: `You have successfully redeemed ${reward.title}. Your request is pending approval.`,
         id: toastId,
       });
+      router.refresh();
     } catch (error) {
       console.error('Failed to redeem reward:', error);
       toast.error('Redemption Failed', {
@@ -184,42 +188,21 @@ export function RewardsList({
           const isRedeemed = rewardStatus !== null;
           const isRedeemedByAnyone = isRewardRedeemedByAnyone(reward.id);
           const canAfford = earnedPoints >= reward.points && !isRedeemed;
+          const showDeleteButton = shouldShowDeleteButton(reward.id);
 
-          // Show progress as either earned points or reward points (whichever is smaller)
           const displayPoints = Math.min(earnedPoints, reward.points);
           const percentage = canAfford ? 100 : (displayPoints / reward.points) * 100;
 
           return (
             <div
               key={reward.id}
-              className={`rounded-lg border p-4 ${
+              className={`flex flex-col rounded-lg border p-4 ${
                 isRedeemed
                   ? 'bg-muted'
                   : 'border-border bg-card'
               }`}
             >
-              {/* Redeemed Badge */}
-              {isRedeemed && (
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2 rounded-full bg-secondary px-3 py-1">
-                    <IconCircle className="h-4 w-4 text-secondary-foreground" />
-                    <span className="text-sm font-medium text-secondary-foreground">
-                      {rewardStatus === 'pending'
-                        ? 'Pending Approval'
-                        : rewardStatus === 'completed'
-                          ? 'Redeemed!'
-                          : 'Cancelled'}
-                    </span>
-                  </div>
-                  {rewardStatus === 'pending' && (
-                    <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
-                      Awaiting approval
-                    </span>
-                  )}
-                </div>
-              )}
-
-              <div className="space-y-3">
+              <div className="flex flex-1 flex-col space-y-3">
                 {/* Reward Image */}
                 {reward.picture
                   ? (
@@ -232,10 +215,9 @@ export function RewardsList({
                           alt={reward.title}
                           fill
                           className="object-cover"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
-                        {!isRedeemed && (
-                          <div className="absolute inset-0 bg-black/10" />
-                        )}
+                        {!isRedeemed && <div className="absolute inset-0 bg-black/10" />}
                       </div>
                     )
                   : (
@@ -250,11 +232,11 @@ export function RewardsList({
                     )}
 
                 {/* Reward Title and Points */}
-                <div className="flex items-start justify-between">
-                  <h3 className="text-lg font-semibold text-card-foreground">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="line-clamp-2 flex-1 text-lg font-semibold break-words text-card-foreground">
                     {reward.title}
                   </h3>
-                  <div className={`rounded-full px-3 py-1 text-sm font-medium ${
+                  <div className={`flex-shrink-0 rounded-full px-3 py-1 text-sm font-medium ${
                     isRedeemed
                       ? canAfford
                         ? 'bg-green-100 text-green-800'
@@ -302,9 +284,7 @@ export function RewardsList({
                       <span className="text-muted-foreground">
                         {canAfford
                           ? (
-                              <span className="font-medium text-green-600">
-                                ✓ Ready to claim!
-                              </span>
+                              <span className="font-medium text-green-600">✓ Ready to claim!</span>
                             )
                           : (
                               <span className="text-card-foreground">
@@ -323,28 +303,29 @@ export function RewardsList({
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex gap-2 pt-2">
+                <div className="mt-auto flex gap-2 pt-2">
                   {isRedeemed
                     ? (
                         <div className="flex flex-1 items-center justify-center gap-2 rounded-md border border-border bg-secondary px-4 py-2">
-                          <IconCircle className="h-4 w-4 text-secondary-foreground" />
                           <span className="text-sm font-medium text-secondary-foreground">
-                            {rewardStatus === 'pending' ? 'Pending Approval' : 'Redeemed!'}
+                            {rewardStatus === 'pending' ? 'Waiting to receive!' : 'Redeemed!'}
                           </span>
                         </div>
                       )
                     : (
                         <>
-                          <Button
-                            variant={canAfford ? 'default' : 'outline'}
-                            size="sm"
-                            className="flex-1"
-                            onClick={() => handleRedeem(reward)}
-                            disabled={!canAfford}
-                          >
-                            {canAfford ? 'Claim Now' : 'Need More Points'}
-                          </Button>
-                          {canRemove && (
+                          {!hasPermission && (
+                            <Button
+                              variant={canAfford ? 'default' : 'outline'}
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => handleRedeem(reward)}
+                              disabled={!canAfford}
+                            >
+                              {canAfford ? 'Claim Now' : 'Need More Points'}
+                            </Button>
+                          )}
+                          {showDeleteButton && (
                             <Button
                               variant="ghost"
                               size="sm"
@@ -358,13 +339,6 @@ export function RewardsList({
                         </>
                       )}
                 </div>
-
-                {/* Created Date */}
-                <div className="border-t pt-2 text-xs text-muted-foreground">
-                  Added
-                  {' '}
-                  {new Date(reward.createdAt).toLocaleDateString()}
-                </div>
               </div>
             </div>
           );
@@ -375,10 +349,7 @@ export function RewardsList({
       {rewards.length === 0 && (
         <div className="py-12 text-center">
           <div className="mb-4 text-muted-foreground">
-            <p className="text-lg">No rewards found</p>
-            <p className="mt-1 text-sm">
-              Be the first to create a reward!
-            </p>
+            <p className="text-lg">No rewards yet!</p>
           </div>
         </div>
       )}

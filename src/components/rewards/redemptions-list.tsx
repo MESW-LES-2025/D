@@ -1,8 +1,11 @@
 'use client';
 
-import { IconUser } from '@tabler/icons-react';
+import { IconCheck, IconUser } from '@tabler/icons-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation'; // Add this import
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 type Reward = {
   id: string;
@@ -19,9 +22,8 @@ type Redemption = {
   rewardId: string;
   userId: string;
   status: string;
-  userName?: string; // We'll need to fetch this separately
-  userEmail?: string; // We'll need to fetch this separately
-  redeemedAt?: Date; // Add this if available
+  redeemedAt?: Date;
+  pointsSpent: number;
 };
 
 type UserInfo = {
@@ -32,19 +34,31 @@ type UserInfo = {
 
 type RewardsManagementListProps = {
   rewards: Reward[];
-  redemptions: (Redemption & { userInfo?: UserInfo })[]; // Redemptions with user info
-  organizationUsers: UserInfo[]; // All users in organization to get names
+  redemptions: Redemption[];
+  organizationUsers: UserInfo[];
+  onUpdateRedemptionStatus?: (
+    rewardId: string,
+    userId: string,
+    status: 'completed' | 'cancelled',
+  ) => Promise<void>;
 };
 
 export function RewardsManagementList({
   rewards,
   redemptions,
   organizationUsers,
+  onUpdateRedemptionStatus,
 }: RewardsManagementListProps) {
+  const router = useRouter(); // Add this
+  const [updatingKeys, setUpdatingKeys] = useState<Set<string>>(new Set());
+
   // Helper to get user info from userId
   const getUserInfo = (userId: string): UserInfo | undefined => {
     return organizationUsers.find(user => user.id === userId);
   };
+
+  // Create a composite key for tracking updates
+  const getCompositeKey = (rewardId: string, userId: string) => `${rewardId}:${userId}`;
 
   // Filter rewards to only those that have been redeemed by anyone
   const redeemedRewards = rewards.filter(reward =>
@@ -75,13 +89,40 @@ export function RewardsManagementList({
   const getStatusDisplay = (status: string) => {
     switch (status) {
       case 'pending':
-        return { label: 'Pending', className: 'bg-amber-100 text-amber-800' };
+        return { label: 'Pending Approval', className: 'bg-amber-100 text-amber-800' };
       case 'completed':
         return { label: 'Completed', className: 'bg-green-100 text-green-800' };
       case 'cancelled':
         return { label: 'Cancelled', className: 'bg-red-100 text-red-800' };
       default:
         return { label: 'Unknown', className: 'bg-gray-100 text-gray-800' };
+    }
+  };
+
+  // Calculate stats
+  const totalRedemptions = redemptions.length;
+  const pendingCount = redemptions.filter(r => r.status === 'pending').length;
+  const completedCount = redemptions.filter(r => r.status === 'completed').length;
+
+  const handleUpdateStatus = async (rewardId: string, userId: string, status: 'completed' | 'cancelled') => {
+    if (!onUpdateRedemptionStatus) {
+      return;
+    }
+
+    const compositeKey = getCompositeKey(rewardId, userId);
+    setUpdatingKeys(prev => new Set(prev).add(compositeKey));
+
+    try {
+      await onUpdateRedemptionStatus(rewardId, userId, status);
+      router.refresh(); // Add this line to refresh the page
+    } catch (error) {
+      console.error('Failed to update redemption status:', error);
+    } finally {
+      setUpdatingKeys((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(compositeKey);
+        return newSet;
+      });
     }
   };
 
@@ -100,44 +141,20 @@ export function RewardsManagementList({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Redeemed Rewards Management</h2>
-          <p className="text-sm text-muted-foreground">
-            View and manage all redeemed rewards in your organization
-          </p>
-        </div>
-        <div className="rounded-lg bg-muted px-4 py-2">
-          <p className="text-sm text-muted-foreground">Total Redeemed Rewards</p>
-          <p className="text-2xl font-bold">{redeemedRewards.length}</p>
-        </div>
-      </div>
-
       {/* Stats Summary */}
       <div className="rounded-lg bg-muted p-4">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <div>
             <p className="text-sm text-muted-foreground">Total Redemptions</p>
-            <p className="text-2xl font-bold">{redemptions.length}</p>
+            <p className="text-2xl font-bold">{totalRedemptions}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Pending Approvals</p>
-            <p className="text-2xl font-bold text-amber-600">
-              {redemptions.filter(r => r.status === 'pending').length}
-            </p>
+            <p className="text-2xl font-bold text-amber-600">{pendingCount}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Completed</p>
-            <p className="text-2xl font-bold text-green-600">
-              {redemptions.filter(r => r.status === 'completed').length}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Cancelled</p>
-            <p className="text-2xl font-bold text-red-600">
-              {redemptions.filter(r => r.status === 'cancelled').length}
-            </p>
+            <p className="text-2xl font-bold text-green-600">{completedCount}</p>
           </div>
         </div>
       </div>
@@ -149,6 +166,17 @@ export function RewardsManagementList({
             acc[r.status] = (acc[r.status] || 0) + 1;
             return acc;
           }, {} as Record<string, number>);
+
+          // Filter redemptions to show pending ones first
+          const sortedRedemptions = [...rewardRedemptions].sort((a, b) => {
+            if (a.status === 'pending' && b.status !== 'pending') {
+              return -1;
+            }
+            if (a.status !== 'pending' && b.status === 'pending') {
+              return 1;
+            }
+            return 0;
+          });
 
           return (
             <div
@@ -210,28 +238,27 @@ export function RewardsManagementList({
                       </div>
                     </div>
                   </div>
-
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground">Added</p>
-                    <p className="font-medium">
-                      {new Date(reward.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
                 </div>
 
                 {/* Redemptions List */}
                 <div className="rounded-lg border bg-muted/50">
                   <div className="border-b p-4">
-                    <h4 className="font-medium text-card-foreground">Users who redeemed this reward</h4>
+                    <h4 className="font-medium text-card-foreground">
+                      Users who redeemed this reward (
+                      {rewardRedemptions.length}
+                      )
+                    </h4>
                   </div>
                   <div className="divide-y">
-                    {rewardRedemptions.map((redemption, index) => {
+                    {sortedRedemptions.map((redemption, index) => {
                       const statusDisplay = getStatusDisplay(redemption.status);
                       const user = redemption.userInfo;
+                      const compositeKey = getCompositeKey(redemption.rewardId, redemption.userId);
+                      const isUpdating = updatingKeys.has(compositeKey);
 
                       return (
                         <div key={index} className="p-4">
-                          <div className="flex items-center justify-between">
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex items-center gap-3">
                               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
                                 {user?.name
@@ -263,9 +290,36 @@ export function RewardsManagementList({
                                     : 'Unknown date'}
                                 </p>
                               </div>
-                              <Badge className={statusDisplay.className}>
-                                {statusDisplay.label}
-                              </Badge>
+
+                              <div className="flex items-center gap-2">
+                                <Badge className={statusDisplay.className}>
+                                  {statusDisplay.label}
+                                </Badge>
+
+                                {/* Action buttons for pending redemptions */}
+                                {redemption.status === 'pending' && onUpdateRedemptionStatus && (
+                                  <div className="flex gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-8 border-green-200 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800"
+                                      onClick={() => handleUpdateStatus(redemption.rewardId, redemption.userId, 'completed')}
+                                      disabled={isUpdating}
+                                    >
+                                      {isUpdating
+                                        ? (
+                                            'Updating...'
+                                          )
+                                        : (
+                                            <>
+                                              <IconCheck className="mr-1 h-3 w-3" />
+                                              Approve
+                                            </>
+                                          )}
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>

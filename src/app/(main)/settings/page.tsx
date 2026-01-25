@@ -18,6 +18,8 @@ export default async function Home() {
     redirect('/sign-in?callbackUrl=/dashboard');
   }
 
+  redirect('/settings/account');
+
   return (
     <div className="min-h-screen  py-12">
       <div className="mx-auto max-w-lg px-6">
