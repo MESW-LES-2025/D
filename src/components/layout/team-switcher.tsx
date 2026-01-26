@@ -144,6 +144,8 @@ export function TeamSwitcher() {
                   await client.organization.setActive({
                     organizationId: org.id,
                   });
+                  // Reload the page to update server components with new org data
+                  window.location.reload();
                 }}
                 className="gap-2 p-2"
               >

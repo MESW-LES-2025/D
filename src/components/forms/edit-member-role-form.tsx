@@ -3,6 +3,7 @@
 import type * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { IconLoader2 } from '@tabler/icons-react';
+import { useRouter } from 'next/navigation'; // Added import
 import { useEffect, useTransition } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -40,6 +41,7 @@ type EditRoleFormProps = React.ComponentProps<'form'> & {
 };
 
 export function EditRoleForm({ userRole, className, onSuccess, memberId, ...props }: EditRoleFormProps) {
+  const router = useRouter(); // Initialize router
   const isValidRole = (role: string | undefined): role is 'admin' | 'member' | 'owner' => {
     return role === 'admin' || role === 'member' || role === 'owner';
   };
@@ -95,6 +97,7 @@ export function EditRoleForm({ userRole, className, onSuccess, memberId, ...prop
 
         toast.success(`Role updated to ${values.role} successfully!`);
         onSuccess?.();
+        router.refresh(); // Add this line to refresh the page data
       } catch (error) {
         toast.error(error instanceof Error ? error.message : 'Failed to update role');
       }
