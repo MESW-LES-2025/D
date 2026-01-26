@@ -14,6 +14,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
+import * as userPermissions from '@/components/UserPermissions';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { recordPointTransaction } from '@/lib/utils/pointTransactionHelpers';
@@ -26,6 +27,10 @@ export const metadata: Metadata = {
   title: 'TaskUp | Rewards',
   description: 'Redeem Rewards with the points you gain!',
 };
+
+// Add these exports to disable caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 async function getActiveOrganization(organizationId: undefined | null | string) {
   if (!organizationId) {
@@ -186,26 +191,64 @@ async function redeemReward(rewardId: string, userId: string, organizationId: st
   }
 }
 
-async function getUserRedemptions(userId: string, organizationId: string) {
+async function updateRedemptionStatus(
+  rewardId: string,
+  userId: string,
+  status: 'completed' | 'cancelled',
+  organizationId: string,
+) {
+  'use server';
+
   try {
-    const userRedemptions = await db
-      .select({
-        rewardId: rewardRedemptionsTable.rewardId,
-        userId: rewardRedemptionsTable.userId,
-        status: rewardRedemptionsTable.status,
+    // Update the redemption status using the composite key
+    await db.update(rewardRedemptionsTable)
+      .set({
+        status,
       })
-      .from(rewardRedemptionsTable)
       .where(
         and(
+          eq(rewardRedemptionsTable.rewardId, rewardId),
           eq(rewardRedemptionsTable.userId, userId),
           eq(rewardRedemptionsTable.organizationId, organizationId),
         ),
       );
 
-    return userRedemptions;
+    // If status is cancelled, refund the points to the user
+    if (status === 'cancelled') {
+      // First, get the points spent for this redemption
+      const [redemption] = await db
+        .select()
+        .from(rewardRedemptionsTable)
+        .where(
+          and(
+            eq(rewardRedemptionsTable.rewardId, rewardId),
+            eq(rewardRedemptionsTable.userId, userId),
+            eq(rewardRedemptionsTable.organizationId, organizationId),
+          ),
+        )
+        .limit(1);
+
+      if (redemption) {
+        // Refund the points to the user
+        await recordPointTransaction(
+          userId,
+          organizationId,
+          null,
+          'reward_redemption',
+          redemption.pointsSpent, // Positive number for refund
+          {
+            rewardId,
+            originalTransactionType: 'reward_redemption',
+            refundReason: 'redemption_cancelled',
+          },
+        );
+      }
+    }
+
+    return { success: true };
   } catch (error) {
-    console.error('Failed to fetch user redemptions:', error);
-    return [];
+    console.error('Failed to update redemption status:', error);
+    throw error;
   }
 }
 
@@ -277,6 +320,7 @@ async function getAllRedemptions(organizationId: string) {
         userId: rewardRedemptionsTable.userId,
         status: rewardRedemptionsTable.status,
         redeemedAt: rewardRedemptionsTable.redeemedAt,
+        pointsSpent: rewardRedemptionsTable.pointsSpent, // Add this
       })
       .from(rewardRedemptionsTable)
       .where(eq(rewardRedemptionsTable.organizationId, organizationId));
@@ -301,16 +345,11 @@ export default async function RewardsPage() {
   const rewardsInOrg = await getRewardsInOrganization(session.session.activeOrganizationId);
   const earnedPoints = await getUserPoints();
   const organizationId = session.session.activeOrganizationId || '';
-  const userRedemptions = await getUserRedemptions(currentUser.id, organizationId);
   const organizationUsers = await getUsersInOrganization(organizationId);
   const allRedemptions = await getAllRedemptions(organizationId);
 
-  // TODO: Implement proper role-based access control
-  // For now, placeholder - you can replace this with actual role checking
-  const userRole = 'admin'; // This should come from your session/member data
-  const isAdmin = ['admin', 'owner'].includes(userRole);
-  const canRemove = isAdmin; // Only admins can remove rewards
-  const canViewManagement = isAdmin; // Only admins can view management tab
+  const currentUserRole = await userPermissions.getUserRole(currentUser.id, session.session.activeOrganizationId);
+  const hasPermission = await userPermissions.getUserPermissions(currentUserRole);
 
   return (
     <div className="min-h-screen py-12">
@@ -327,9 +366,11 @@ export default async function RewardsPage() {
                 , redeem your points for exciting rewards!
               </p>
             </div>
-            <CreateRewardDialog>
-              <Button>+ New Reward</Button>
-            </CreateRewardDialog>
+            {hasPermission && (
+              <CreateRewardDialog>
+                <Button>+ New Reward</Button>
+              </CreateRewardDialog>
+            )}
           </div>
 
           <Tabs defaultValue="rewards" className="space-y-6">
@@ -339,19 +380,13 @@ export default async function RewardsPage() {
                   <IconGift className="mr-2 h-5 w-5" />
                   Available Rewards
                 </TabsTrigger>
-                {canViewManagement && (
+                {hasPermission && (
                   <TabsTrigger value="management" className="px-4 py-2 text-base">
                     <IconUsers className="mr-2 h-5 w-5" />
                     Redemptions Management
                   </TabsTrigger>
                 )}
               </TabsList>
-
-              {/* Points Summary - Show in both tabs */}
-              <div className="rounded-lg bg-muted px-4 py-2">
-                <p className="text-sm text-muted-foreground">Your Points</p>
-                <p className="text-2xl font-bold">{earnedPoints}</p>
-              </div>
             </div>
 
             <TabsContent value="rewards" className="space-y-4">
@@ -372,7 +407,7 @@ export default async function RewardsPage() {
                       earnedPoints={earnedPoints}
                       userId={currentUser.id}
                       organizationId={organizationId}
-                      redemptions={userRedemptions}
+                      redemptions={allRedemptions} // Change from userRedemptions to allRedemptions
                       onRedeem={async (rewardId: string) => {
                         'use server';
                         await redeemReward(rewardId, currentUser.id, organizationId);
@@ -381,17 +416,21 @@ export default async function RewardsPage() {
                         'use server';
                         await removeReward(rewardId);
                       }}
-                      canRemove={canRemove}
+                      hasPermission={hasPermission}
                     />
                   )}
             </TabsContent>
 
-            {canViewManagement && (
+            {hasPermission && (
               <TabsContent value="management" className="space-y-4">
                 <RewardsManagementList
                   rewards={rewardsInOrg}
                   redemptions={allRedemptions}
                   organizationUsers={organizationUsers}
+                  onUpdateRedemptionStatus={async (rewardId, userId, status) => {
+                    'use server';
+                    await updateRedemptionStatus(rewardId, userId, status, organizationId);
+                  }}
                 />
               </TabsContent>
             )}

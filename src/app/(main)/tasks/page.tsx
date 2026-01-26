@@ -5,6 +5,7 @@ import { and, eq, inArray } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { TasksTabs } from '@/components/tasks/tasks-tabs';
+import * as userPermissions from '@/components/UserPermissions';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
 import { allStatuses, statuses } from '@/lib/task/task-options';
@@ -29,11 +30,11 @@ export default async function TaskPage({ searchParams }: Props) {
     redirect('/sign-in?callbackUrl=/dashboard');
   }
 
-  // TODO: Implement role-based access control
-  const isAdmin = true;
+  const currentUserRole = await userPermissions.getUserRole(session.user?.id, session.session.activeOrganizationId);
+  const hasPermission = await userPermissions.getUserPermissions(currentUserRole);
 
   // Fetch tasks from your database
-  const statusList = isAdmin ? allStatuses.map(s => s.value) as Status[] : statuses.map(s => s.value) as Status[];
+  const statusList = hasPermission ? allStatuses.map(s => s.value) as Status[] : statuses.map(s => s.value) as Status[];
   const tasksData = await db
     .select()
     .from(taskTable)
@@ -90,7 +91,7 @@ export default async function TaskPage({ searchParams }: Props) {
       </div>
       <TasksTabs
         tasks={tasks}
-        isAdmin={isAdmin}
+        hasPermission={hasPermission}
         taskId={params.taskId}
         currentUserId={session.user?.id}
       />

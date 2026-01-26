@@ -18,19 +18,20 @@ export default async function Home() {
     redirect('/sign-in?callbackUrl=/dashboard');
   }
 
-  return (
-    <div className="min-h-screen  py-12">
-      <div className="mx-auto max-w-lg px-6">
-        <div className="rounded-lg bg-card p-8 shadow-md">
-          <h1 className="mb-8 text-center text-3xl font-bold">
-            Settings
-          </h1>
+  // return (
+  //   <div className="min-h-screen  py-12">
+  //     <div className="mx-auto max-w-lg px-6">
+  //       <div className="rounded-lg bg-card p-8 shadow-md">
+  //         <h1 className="mb-8 text-center text-3xl font-bold">
+  //           Settings
+  //         </h1>
 
-          <div className="flex-1 space-y-3">
-            This is the settings page
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  //         <div className="flex-1 space-y-3">
+  //           This is the settings page
+  //         </div>
+  //       </div>
+  //     </div>
+  //   </div>
+  // );
+  redirect('/settings/account');
 }
