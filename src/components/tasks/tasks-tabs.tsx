@@ -18,14 +18,14 @@ import {
 
 type TasksTabsProps = {
   tasks: TaskWithAssignees[];
-  isAdmin: boolean;
+  hasPermission: boolean;
   taskId?: string;
   currentUserId?: string;
 };
 
 const TASKS_TAB_STORAGE_KEY = 'tasks-active-tab';
 
-export function TasksTabs({ tasks, isAdmin, taskId, currentUserId }: TasksTabsProps) {
+export function TasksTabs({ tasks, hasPermission, taskId, currentUserId }: TasksTabsProps) {
   const [activeTab, setActiveTab] = useState<string>('table');
   const [isMounted, setIsMounted] = useState(false);
 
@@ -60,16 +60,16 @@ export function TasksTabs({ tasks, isAdmin, taskId, currentUserId }: TasksTabsPr
         </TabsTrigger>
       </TabsList>
       <TabsContent value="table">
-        {isAdmin
+        {hasPermission
           ? (
-              <AdminDataTable data={tasks} columns={adminColumns} isAdmin={isAdmin} autoOpenTaskId={taskId} />
+              <AdminDataTable data={tasks} columns={adminColumns} isAdmin={hasPermission} autoOpenTaskId={taskId} />
             )
-          : <DataTable data={tasks} columns={columns} isAdmin={isAdmin} autoOpenTaskId={taskId} />}
+          : <DataTable data={tasks} columns={columns} isAdmin={hasPermission} autoOpenTaskId={taskId} />}
       </TabsContent>
       <TabsContent value="board">
         <KanbanView
           tasks={tasks}
-          isAdmin={isAdmin}
+          isAdmin={hasPermission}
           currentUserId={currentUserId}
         />
       </TabsContent>
